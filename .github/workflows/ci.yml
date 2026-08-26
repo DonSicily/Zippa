@@ -1,0 +1,51 @@
+# Continuous Integration Pipeline
+# Runs automatically on every Pull Request to ensure code quality and passing tests.
+
+name: Bestiez CI Pipeline
+
+on:
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  # 1. Lint and Test Backend
+  backend-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Install Backend Dependencies
+        run: cd backend && npm ci
+
+      - name: Run ESLint
+        run: cd backend && npm run lint || true # Allow lint warnings to not block CI initially
+
+      - name: Run Backend Tests
+        run: cd backend && npm run test
+        env:
+          MONGODB_URI: mongodb://localhost:27017/bestiez_test
+          JWT_SECRET: test_secret
+
+  # 2. Build Check Web Portals
+  web-build-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Install & Build Vendor Portal
+        run: cd vendor-portal && npm ci && npm run build
+
+      - name: Install & Build Admin Dashboard
+        run: cd admin-dashboard && npm ci && npm run build

@@ -1,0 +1,28 @@
+{
+  "name": "bestiez-monorepo",
+  "version": "1.0.0",
+  "description": "Bestiez Campus Marketplace Monorepo",
+  "private": true,
+  "workspaces": [
+    "backend",
+    "vendor-portal",
+    "admin-dashboard",
+    "mobile-app"
+  ],
+  "scripts": {
+    "install:all": "npm install",
+    "dev:backend": "cd backend && npm run dev",
+    "dev:vendor": "cd vendor-portal && npm start",
+    "dev:admin": "cd admin-dashboard && npm start",
+    "dev:mobile": "cd mobile-app && npm start",
+    "dev:all": "concurrently \"npm run dev:backend\" \"npm run dev:vendor\" \"npm run dev:admin\"",
+    "build:vendor": "cd vendor-portal && npm run build",
+    "build:admin": "cd admin-dashboard && npm run build",
+    "db:migrate": "cd database && node migrations/001_create_users.js && node migrations/002_create_vendors.js && node migrations/003_create_products.js && node migrations/004_create_orders.js && node migrations/005_create_campuses.js",
+    "db:seed": "cd database && node seeds/sampleData.js",
+    "db:setup": "npm run db:migrate && npm run db:seed"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.1"
+  }
+}

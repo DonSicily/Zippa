@@ -1,0 +1,34 @@
+# Continuous Deployment Pipeline
+# Automatically deploys the backend to Railway.app when code is merged to 'main'.
+
+name: Bestiez CD Pipeline
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy-backend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Deploy Backend to Railway
+        uses: bervProject/railway-deploy@main
+        with:
+          railway_token: ${{ secrets.RAILWAY_TOKEN }}
+          service: bestiez-backend
+          project: ${{ secrets.RAILWAY_PROJECT_ID }}
+          # Railway will automatically detect the Dockerfile in /backend and redeploy
+          
+  deploy-web-portals:
+    runs-on: ubuntu-latest
+    needs: deploy-backend
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Trigger Vercel/Netlify Deploy (Vendor & Admin)
+        # If you host the React apps on Vercel, you can trigger a deploy hook here
+        run: |
+          curl -X POST ${{ secrets.VENDOR_PORTAL_DEPLOY_HOOK }}
+          curl -X POST ${{ secrets.ADMIN_DASHBOARD_DEPLOY_HOOK }}

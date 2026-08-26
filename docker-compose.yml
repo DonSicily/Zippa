@@ -1,0 +1,64 @@
+# Orchestrates the entire Bestiez ecosystem for local development.
+# Run 'docker-compose up' in the root directory to start everything.
+
+version: '3.8'
+
+services:
+  # 1. MongoDB Database
+  mongo:
+    image: mongo:latest
+    container_name: bestiez_mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password123
+
+  # 2. Node.js Backend API
+  backend:
+    build: ./backend
+    container_name: bestiez_backend
+    ports:
+      - "5000:5000"
+    depends_on:
+      - mongo
+    environment:
+      - NODE_ENV=development
+      - MONGODB_URI=mongodb://admin:password123@mongo:27017/bestiez?authSource=admin
+      - PORT=5000
+      - JWT_SECRET=super_secret_jwt_key_for_local_dev
+      - CLOUDINARY_CLOUD_NAME=your_cloud_name
+      - CLOUDINARY_API_KEY=your_api_key
+      - CLOUDINARY_API_SECRET=your_api_secret
+      - PAYSTACK_SECRET_KEY=sk_test_xxx
+      - SPEEDAF_API_KEY=your_speedaf_key
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+
+  # 3. Vendor Portal (React)
+  vendor-portal:
+    build: ./vendor-portal
+    container_name: bestiez_vendor_portal
+    ports:
+      - "3001:80"
+    depends_on:
+      - backend
+    environment:
+      - REACT_APP_API_URL=http://localhost:5000/api
+
+  # 4. Admin Dashboard (React)
+  admin-dashboard:
+    build: ./admin-dashboard
+    container_name: bestiez_admin_dashboard
+    ports:
+      - "3002:80"
+    depends_on:
+      - backend
+    environment:
+      - REACT_APP_API_URL=http://localhost:5000/api
+
+volumes:
+  mongo_data:

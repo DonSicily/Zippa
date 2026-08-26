@@ -1,0 +1,23 @@
+{
+  "name": "bestiez-wechat-vendor",
+  "version": "1.0.0",
+  "description": "Bestiez Vendor WeChat Mini-Program",
+  "main": "main.js",
+  "scripts": {
+    "dev:mp-weixin": "uni -p mp-weixin",
+    "build:mp-weixin": "uni build -p mp-weixin"
+  },
+  "dependencies": {
+    "@dcloudio/uni-app": "3.0.0-3081220230817001",
+    "@dcloudio/uni-components": "3.0.0-3081220230817001",
+    "@dcloudio/uni-mp-weixin": "3.0.0-3081220230817001",
+    "vue": "^3.2.47",
+    "pinia": "^2.1.6"
+  },
+  "devDependencies": {
+    "@dcloudio/types": "^3.3.3",
+    "@dcloudio/uni-automator": "3.0.0-3081220230817001",
+    "@dcloudio/vite-plugin-uni": "3.0.0-3081220230817001",
+    "vite": "^4.4.9"
+  }
+}

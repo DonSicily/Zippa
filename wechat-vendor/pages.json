@@ -1,0 +1,47 @@
+{
+  "pages": [
+    { "path": "pages/index/index", "style": { "navigationBarTitleText": "Bestiez Dashboard" } },
+    { "path": "pages/orders/orders", "style": { "navigationBarTitleText": "Order Management" } },
+    { "path": "pages/products/products", "style": { "navigationBarTitleText": "My Products" } },
+    { "path": "pages/profile/profile", "style": { "navigationBarTitleText": "Vendor Profile" } },
+    { "path": "pages/privacy/privacy", "style": { "navigationBarTitleText": "Privacy Policy" } }
+  ],
+  "globalStyle": {
+    "navigationBarTextStyle": "black",
+    "navigationBarTitleText": "Bestiez",
+    "navigationBarBackgroundColor": "#F8FAFC",
+    "backgroundColor": "#F8FAFC"
+  },
+  "tabBar": {
+    "color": "#718096",
+    "selectedColor": "#004E89",
+    "borderStyle": "white",
+    "backgroundColor": "#ffffff",
+    "list": [
+      {
+        "pagePath": "pages/index/index",
+        "text": "Dashboard",
+        "iconPath": "static/icons/dashboard.png",
+        "selectedIconPath": "static/icons/dashboard-active.png"
+      },
+      {
+        "pagePath": "pages/orders/orders",
+        "text": "Orders",
+        "iconPath": "static/icons/orders.png",
+        "selectedIconPath": "static/icons/orders-active.png"
+      },
+      {
+        "pagePath": "pages/products/products",
+        "text": "Products",
+        "iconPath": "static/icons/products.png",
+        "selectedIconPath": "static/icons/products-active.png"
+      },
+      {
+        "pagePath": "pages/profile/profile",
+        "text": "Profile",
+        "iconPath": "static/icons/profile.png",
+        "selectedIconPath": "static/icons/profile-active.png"
+      }
+    ]
+  }
+}

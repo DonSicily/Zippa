@@ -1,0 +1,38 @@
+<!-- Transactional Email: Sent to Factory when funds are released to their Alipay/WeChat -->
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body { font-family: Arial, sans-serif; background-color: #F4F6F8; color: #1A202C; margin: 0; padding: 0; }
+    .container { max-width: 600px; margin: 0 auto; background: #FFFFFF; border-radius: 8px; overflow: hidden; }
+    .header { background-color: #38A169; padding: 24px; color: #FFFFFF; text-align: center; }
+    .content { padding: 24px; }
+    .amount { font-size: 32px; font-weight: bold; color: #38A169; text-align: center; margin: 20px 0; }
+    .details { background: #F7FAFC; padding: 16px; border-radius: 6px; font-size: 14px; }
+    .details p { margin: 8px 0; }
+    .label { color: #718096; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h2 style="margin: 0;">Payout Successful </h2>
+    </div>
+    <div class="content">
+      <p>Hello {{companyName}},</p>
+      <p>We have successfully processed your weekly payout. The funds have been transferred to your registered {{paymentMethod}} account.</p>
+
+      <div class="amount">¥{{amount}}</div>
+
+      <div class="details">
+        <p><span class="label">Transaction ID:</span> {{transactionId}}</p>
+        <p><span class="label">Date Processed:</span> {{date}}</p>
+        <p><span class="label">Orders Covered:</span> {{orderCount}} orders</p>
+        <p><span class="label">Next Payout Date:</span> Next Friday</p>
+      </div>
+
+      <p style="margin-top: 24px; font-size: 14px; color: #718096;">Thank you for being a trusted Bestiez factory partner!</p>
+    </div>
+  </div>
+</body>
+</html>

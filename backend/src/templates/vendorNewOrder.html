@@ -1,0 +1,56 @@
+<!-- Transactional Email: Sent to Factory when they receive a new order -->
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body { font-family: Arial, sans-serif; background-color: #F4F6F8; color: #1A202C; margin: 0; padding: 0; }
+    .container { max-width: 600px; margin: 0 auto; background: #FFFFFF; border-radius: 8px; overflow: hidden; }
+    .header { background-color: #004E89; padding: 24px; color: #FFFFFF; }
+    .content { padding: 24px; }
+    .alert-box { border-left: 4px solid #FF6B35; background: #FFF5F2; padding: 16px; margin-bottom: 24px; }
+    table { width: 100%; border-collapse: collapse; margin-bottom: 24px; }
+    th { text-align: left; padding: 12px; border-bottom: 2px solid #E2E8F0; color: #718096; font-size: 12px; text-transform: uppercase; }
+    td { padding: 12px; border-bottom: 1px solid #E2E8F0; }
+    .btn { display: inline-block; background: #004E89; color: #FFFFFF; text-decoration: none; padding: 12px 24px; border-radius: 6px; font-weight: bold; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h2 style="margin: 0;">Bestiez Vendor Portal</h2>
+    </div>
+    <div class="content">
+      <div class="alert-box">
+        <strong>🔔 New Order Received!</strong><br>
+        Please prepare the following items for shipment to the Bestiez Consolidation Hub.
+      </div>
+
+      <p><strong>Order ID:</strong> {{orderNumber}}</p>
+      <p><strong>Ship To:</strong> Bestiez Guangzhou Hub, Building 4, Baiyun District.</p>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Product</th>
+            <th>SKU</th>
+            <th>Qty</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{#each items}}
+          <tr>
+            <td>{{this.name}}</td>
+            <td>{{this.sku}}</td>
+            <td>{{this.quantity}}</td>
+          </tr>
+          {{/each}}
+        </tbody>
+      </table>
+
+      <p style="font-size: 14px; color: #718096;">Please mark this order as "Shipped to Hub" in your vendor dashboard within 24 hours.</p>
+      
+      <a href="{{vendorDashboardUrl}}" class="btn">Go to Vendor Dashboard</a>
+    </div>
+  </div>
+</body>
+</html>

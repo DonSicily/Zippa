@@ -1,0 +1,45 @@
+<!-- Transactional Email: Sent to Student after successful payment -->
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background-color: #F8F9FA; color: #2D2D2D; margin: 0; padding: 0; }
+    .container { max-width: 600px; margin: 0 auto; background: #FFFFFF; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+    .header { background-color: #6C63FF; padding: 30px; text-align: center; color: #FFFFFF; }
+    .header h1 { margin: 0; font-size: 28px; font-weight: 900; letter-spacing: -1px; }
+    .content { padding: 30px; }
+    .order-box { background: #F0F4FF; border-radius: 12px; padding: 20px; margin-bottom: 20px; }
+    .order-id { font-size: 14px; color: #6C63FF; font-weight: bold; text-transform: uppercase; }
+    .total { font-size: 24px; font-weight: 900; color: #2D2D2D; margin-top: 10px; }
+    .footer { background: #F8F9FA; padding: 20px; text-align: center; font-size: 12px; color: #7A7A7A; }
+    .btn { display: inline-block; background: #FF6B35; color: #FFFFFF; text-decoration: none; padding: 14px 28px; border-radius: 30px; font-weight: bold; margin-top: 20px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Bestiez</h1>
+      <p style="margin: 10px 0 0 0; font-size: 16px;">Your drip is secured! 🔒</p>
+    </div>
+    <div class="content">
+      <p>Hey {{firstName}},</p>
+      <p>Thanks for shopping with Bestiez! Your order has been confirmed and our factory partners are already packing your items.</p>
+      
+      <div class="order-box">
+        <div class="order-id">Order #{{orderNumber}}</div>
+        <div class="total">Total Paid: ₦{{totalAmount}}</div>
+      </div>
+
+      <p>We'll send you another notification when your package arrives at your campus pickup hub.</p>
+      
+      <div style="text-align: center;">
+        <a href="{{trackingUrl}}" class="btn">Track My Order</a>
+      </div>
+    </div>
+    <div class="footer">
+      <p>Need help? Reply to this email or chat with us in the app.</p>
+      <p>© 2026 Bestiez. Direct Factory Goods.</p>
+    </div>
+  </div>
+</body>
+</html>
