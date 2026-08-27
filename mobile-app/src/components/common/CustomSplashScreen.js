@@ -1,30 +1,22 @@
-// A custom, animated splash screen that plays while the app loads initial data.
-// Replaces the default static Expo splash with a branded, Gen-Z experience.
-
+// v2 Splash — ivory canvas, navy monogram, gold halo circles, orange loader.
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, Animated, Dimensions } from 'react-native';
 import { COLORS } from '../../utils/colors';
 
-const { width, height } = Dimensions.get('window');
+const { width } = Dimensions.get('window');
 
 const CustomSplashScreen = ({ onFinish }) => {
   const [fadeAnim] = useState(new Animated.Value(0));
   const [scaleAnim] = useState(new Animated.Value(0.8));
 
   useEffect(() => {
-    // Run entrance animations
     Animated.parallel([
       Animated.timing(fadeAnim, { toValue: 1, duration: 800, useNativeDriver: true }),
       Animated.spring(scaleAnim, { toValue: 1, friction: 5, tension: 40, useNativeDriver: true }),
     ]).start();
 
-    // Hide splash screen after 2.5 seconds
     const timer = setTimeout(() => {
-      Animated.timing(fadeAnim, {
-        toValue: 0,
-        duration: 400,
-        useNativeDriver: true,
-      }).start(() => {
+      Animated.timing(fadeAnim, { toValue: 0, duration: 400, useNativeDriver: true }).start(() => {
         if (onFinish) onFinish();
       });
     }, 2500);
@@ -34,7 +26,6 @@ const CustomSplashScreen = ({ onFinish }) => {
 
   return (
     <Animated.View style={[styles.container, { opacity: fadeAnim }]}>
-      {/* Background Gradient Simulation */}
       <View style={styles.bgCircle1} />
       <View style={styles.bgCircle2} />
 
@@ -54,23 +45,16 @@ const CustomSplashScreen = ({ onFinish }) => {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: COLORS.primary,
-    justifyContent: 'center',
-    alignItems: 'center',
-    zIndex: 99999,
-    overflow: 'hidden',
-  },
-  bgCircle1: { position: 'absolute', top: -100, right: -100, width: 300, height: 300, borderRadius: 150, backgroundColor: COLORS.accent, opacity: 0.2 },
-  bgCircle2: { position: 'absolute', bottom: -150, left: -100, width: 400, height: 400, borderRadius: 200, backgroundColor: '#FFF', opacity: 0.1 },
+  container: { ...StyleSheet.absoluteFillObject, backgroundColor: COLORS.background, justifyContent: 'center', alignItems: 'center', zIndex: 99999, overflow: 'hidden' },
+  bgCircle1: { position: 'absolute', top: -100, right: -100, width: 300, height: 300, borderRadius: 150, backgroundColor: COLORS.goldSoft, opacity: 0.7 },
+  bgCircle2: { position: 'absolute', bottom: -150, left: -100, width: 400, height: 400, borderRadius: 200, backgroundColor: COLORS.orangeSoft, opacity: 0.6 },
   logoContainer: { alignItems: 'center', zIndex: 2 },
-  logoBox: { width: 100, height: 100, borderRadius: 30, backgroundColor: '#FFF', justifyContent: 'center', alignItems: 'center', marginBottom: 20, shadowColor: '#000', shadowOpacity: 0.2, shadowRadius: 20, elevation: 10 },
-  logoText: { fontSize: 50, fontWeight: '900', color: COLORS.primary },
-  brandName: { fontSize: 36, fontWeight: '900', color: '#FFF', letterSpacing: 2, marginBottom: 8 },
-  tagline: { fontSize: 14, color: 'rgba(255,255,255,0.8)', fontWeight: '600' },
-  loaderContainer: { position: 'absolute', bottom: 100, width: width * 0.6, height: 4, backgroundColor: 'rgba(255,255,255,0.2)', borderRadius: 2, overflow: 'hidden' },
-  loaderBar: { height: '100%', backgroundColor: COLORS.accent, borderRadius: 2 },
+  logoBox: { width: 96, height: 96, borderRadius: 28, backgroundColor: COLORS.navy, justifyContent: 'center', alignItems: 'center', marginBottom: 20, shadowColor: COLORS.navy, shadowOpacity: 0.25, shadowRadius: 20, elevation: 10 },
+  logoText: { fontSize: 48, fontWeight: '900', color: '#FFF' },
+  brandName: { fontSize: 34, fontWeight: '900', color: COLORS.navy, letterSpacing: 2, marginBottom: 8 },
+  tagline: { fontSize: 14, color: COLORS.textLight, fontWeight: '600' },
+  loaderContainer: { position: 'absolute', bottom: 100, width: width * 0.6, height: 4, backgroundColor: COLORS.borderLight, borderRadius: 2, overflow: 'hidden' },
+  loaderBar: { height: '100%', backgroundColor: COLORS.orange, borderRadius: 2 },
 });
 
 export default CustomSplashScreen;
