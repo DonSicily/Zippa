@@ -1,15 +1,13 @@
 import React from 'react';
 import { View, ActivityIndicator, StyleSheet, Dimensions } from 'react-native';
-import { COLORS } from '../../utils/colors';
+import { COLORS, RADIUS } from '../../utils/colors';
 
-// Full screen loading overlay
 export const FullScreenLoader = () => (
   <View style={styles.overlay}>
-    <ActivityIndicator size="large" color={COLORS.primary} />
+    <ActivityIndicator size="large" color={COLORS.orange} />
   </View>
 );
 
-// Skeleton loader for product grids
 export const ProductSkeleton = () => (
   <View style={styles.skeletonCard}>
     <View style={styles.skeletonImage} />
@@ -19,44 +17,12 @@ export const ProductSkeleton = () => (
 );
 
 const { width } = Dimensions.get('window');
-const cardWidth = (width - 60) / 2; // Matches the 48% width in grids
+const cardWidth = (width - 60) / 2;
 
 const styles = StyleSheet.create({
-  overlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(255, 255, 255, 0.8)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    zIndex: 999,
-  },
-  skeletonCard: {
-    width: cardWidth,
-    backgroundColor: '#FFF',
-    borderRadius: 25,
-    padding: 15,
-    marginBottom: 20,
-    shadowColor: '#000',
-    shadowOpacity: 0.05,
-    elevation: 3,
-  },
-  skeletonImage: {
-    width: '100%',
-    height: 120,
-    backgroundColor: '#E0E0E0',
-    borderRadius: 20,
-    marginBottom: 15,
-  },
-  skeletonTextShort: {
-    width: '60%',
-    height: 14,
-    backgroundColor: '#E0E0E0',
-    borderRadius: 7,
-    marginBottom: 10,
-  },
-  skeletonTextLong: {
-    width: '40%',
-    height: 18,
-    backgroundColor: '#E0E0E0',
-    borderRadius: 9,
-  },
+  overlay: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(246, 241, 232, 0.85)', justifyContent: 'center', alignItems: 'center', zIndex: 999 },
+  skeletonCard: { width: cardWidth, backgroundColor: COLORS.surface, borderRadius: RADIUS.lg, padding: 12, marginBottom: 16, borderWidth: 1, borderColor: COLORS.borderLight },
+  skeletonImage: { width: '100%', height: 120, backgroundColor: COLORS.imageBg, borderRadius: RADIUS.md, marginBottom: 12 },
+  skeletonTextShort: { width: '80%', height: 12, backgroundColor: COLORS.chipBg, borderRadius: 6, marginBottom: 8 },
+  skeletonTextLong: { width: '50%', height: 14, backgroundColor: COLORS.chipBg, borderRadius: 7 },
 });
