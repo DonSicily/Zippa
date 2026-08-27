@@ -1,8 +1,10 @@
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { COLORS } from '../../utils/colors';
+import Header from '../../components/layout/Header';
+import Button from '../../components/common/Button';
 
 const OTPScreen = () => {
   const [otp, setOtp] = useState('');
@@ -17,27 +19,23 @@ const OTPScreen = () => {
     }
     // In production, call API to verify OTP
     Alert.alert('Success!', 'Account verified. Welcome to Bestiez!', [
-      { text: 'OK', onPress: () => navigation.reset({ index: 0, routes: [{ name: 'Home' }] }) }
+      { text: 'OK', onPress: () => navigation.reset({ index: 0, routes: [{ name: 'Home' }] }) },
     ]);
   };
 
   return (
     <View style={styles.container}>
-      <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
-        <Ionicons name="arrow-back" size={24} color={COLORS.textDark} />
-      </TouchableOpacity>
-
+      <Header title="" />
       <View style={styles.iconCircle}>
-        <Ionicons name="chatbubble-ellipses-outline" size={40} color={COLORS.primary} />
+        <Ionicons name="mail-unread-outline" size={36} color={COLORS.orange} />
       </View>
-
       <Text style={styles.title}>Verify your email</Text>
       <Text style={styles.subtitle}>We sent a 6-digit code to {email || 'your email'}</Text>
 
       <TextInput
         style={styles.otpInput}
-        placeholder="- - - - - -"
-        placeholderTextColor={COLORS.textLight}
+        placeholder="– – – – – –"
+        placeholderTextColor={COLORS.textMuted}
         value={otp}
         onChangeText={setOtp}
         keyboardType="number-pad"
@@ -45,9 +43,7 @@ const OTPScreen = () => {
         textAlign="center"
       />
 
-      <TouchableOpacity style={styles.verifyBtn} onPress={handleVerify}>
-        <Text style={styles.verifyBtnText}>Verify Code</Text>
-      </TouchableOpacity>
+      <Button fullWidth title="Verify Code" onPress={handleVerify} />
 
       <TouchableOpacity style={styles.resendBtn}>
         <Text style={styles.resendText}>Didn't get it? Resend code</Text>
@@ -57,16 +53,13 @@ const OTPScreen = () => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: COLORS.background, paddingHorizontal: 25, paddingTop: 60, alignItems: 'center' },
-  backBtn: { position: 'absolute', top: 60, left: 25, width: 40, height: 40, borderRadius: 20, backgroundColor: '#FFF', justifyContent: 'center', alignItems: 'center' },
-  iconCircle: { width: 80, height: 80, borderRadius: 40, backgroundColor: '#E0D4FC', justifyContent: 'center', alignItems: 'center', marginTop: 40, marginBottom: 20 },
-  title: { fontSize: 28, fontWeight: '900', color: COLORS.textDark, marginBottom: 10, textAlign: 'center' },
-  subtitle: { fontSize: 16, color: COLORS.textLight, textAlign: 'center', marginBottom: 40, paddingHorizontal: 20 },
-  otpInput: { width: '100%', height: 60, backgroundColor: '#FFF', borderRadius: 16, fontSize: 24, fontWeight: 'bold', color: COLORS.textDark, letterSpacing: 10, shadowColor: '#000', shadowOpacity: 0.05, elevation: 3, marginBottom: 30 },
-  verifyBtn: { width: '100%', height: 55, backgroundColor: COLORS.primary, borderRadius: 16, justifyContent: 'center', alignItems: 'center', shadowColor: COLORS.primary, shadowOpacity: 0.3, shadowRadius: 10, elevation: 5 },
-  verifyBtnText: { color: '#FFF', fontSize: 18, fontWeight: 'bold' },
-  resendBtn: { marginTop: 20 },
-  resendText: { color: COLORS.primary, fontWeight: '600' },
+  container: { flex: 1, backgroundColor: COLORS.background, paddingHorizontal: 24, alignItems: 'center' },
+  iconCircle: { width: 84, height: 84, borderRadius: 42, backgroundColor: COLORS.orangeSoft, justifyContent: 'center', alignItems: 'center', marginTop: 30, marginBottom: 20 },
+  title: { fontSize: 26, fontWeight: '800', color: COLORS.navy, marginBottom: 8, textAlign: 'center' },
+  subtitle: { fontSize: 14, color: COLORS.textLight, textAlign: 'center', marginBottom: 36, paddingHorizontal: 20 },
+  otpInput: { width: '100%', height: 60, backgroundColor: COLORS.surface, borderWidth: 1, borderColor: COLORS.border, borderRadius: 12, fontSize: 24, fontWeight: '800', color: COLORS.navy, letterSpacing: 10, marginBottom: 24 },
+  resendBtn: { marginTop: 22 },
+  resendText: { color: COLORS.orange, fontWeight: '700', fontSize: 14 },
 });
 
 export default OTPScreen;
