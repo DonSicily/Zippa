@@ -1,91 +1,127 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, FlatList, StyleSheet, SafeAreaView } from 'react-native';
+import { View, Text, TextInput, ScrollView, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { COLORS } from '../../utils/colors';
+import { useNavigation } from '@react-navigation/native';
+import { COLORS, CARD, RADIUS } from '../../utils/colors';
+import ProductCard from '../../components/product/ProductCard';
 
-const CATEGORIES = ['All', 'Fashion', 'Tech', 'Beauty', 'Home', 'Bags'];
-
-const MOCK_PRODUCTS = [
-  { id: '1', name: 'Wireless Earbuds', price: '₦15,000' },
-  { id: '2', name: 'Canvas Backpack', price: '₦9,500' },
-  { id: '3', name: 'Smart Watch', price: '₦22,000' },
-  { id: '4', name: 'LED Desk Lamp', price: '₦16,000' },
+const FILTER_CHIPS = ['Price', 'Color', 'Brand', 'Rating 4+', 'Free Shipping'];
+const TRENDING_TAGS = ['#CampusCore', '#TechDeals', '#StudyEssentials', '#DormVibes'];
+const SUGGESTED = [
+  { id: 1, name: 'Premium Noise-Canceling Earbuds', price: { discountPrice: 32000, retailPrice: 60000 }, rating: 4.8, reviews: 240, images: [{ url: 'https://images.unsplash.com/photo-1590658268037-6bf12165a8df?w=400' }] },
+  { id: 2, name: 'Unisex Campus Hoodie', price: { discountPrice: 32000, retailPrice: 45000 }, rating: 4.7, reviews: 120, images: [{ url: 'https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=400' }] },
+  { id: 3, name: 'Smart LED Study Lamp', price: { discountPrice: 24000, retailPrice: 40000 }, rating: 4.9, reviews: 95, images: [{ url: 'https://images.unsplash.com/photo-1507473885765-e6ed057f782c?w=400' }] },
+  { id: 4, name: 'Eco-Friendly Dorm Essentials Set', price: { discountPrice: 28000, retailPrice: 42000 }, rating: 4.6, reviews: 88, images: [{ url: 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?w=400' }] },
 ];
 
 const SearchScreen = () => {
-  const [search, setSearch] = useState('');
-  const [activeCategory, setActiveCategory] = useState('All');
+  const navigation = useNavigation();
+  const [query, setQuery] = useState('');
+  const [recent, setRecent] = useState(['wireless earbuds', 'oversized hoodie', 'study desk lamp']);
 
-  const renderProduct = ({ item }) => (
-    <TouchableOpacity style={styles.productCard}>
-      <View style={styles.imagePlaceholder}>
-        <Ionicons name="cube-outline" size={40} color={COLORS.primary} />
-      </View>
-      <Text style={styles.productName}>{item.name}</Text>
-      <Text style={styles.productPrice}>{item.price}</Text>
-    </TouchableOpacity>
-  );
+  const results = SUGGESTED.filter((p) => p.name.toLowerCase().includes(query.toLowerCase()));
+
+  const submit = (text) => {
+    if (text && !recent.includes(text)) setRecent([text, ...recent].slice(0, 5));
+  };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <View style={styles.searchBar}>
-          <Ionicons name="search" size={22} color={COLORS.textLight} />
+    <View style={styles.container}>
+      {/* Search row */}
+      <View style={styles.topRow}>
+        <View style={styles.inputWrap}>
+          <Ionicons name="search-outline" size={20} color={COLORS.textMuted} style={styles.inputIcon} />
           <TextInput
-            style={styles.searchInput}
-            placeholder="Search for anything..."
-            placeholderTextColor={COLORS.textLight}
-            value={search}
-            onChangeText={setSearch}
+            style={styles.input}
+            placeholder="Search products, brands..."
+            placeholderTextColor={COLORS.textMuted}
+            value={query}
+            onChangeText={setQuery}
+            onSubmitEditing={(e) => submit(e.nativeEvent.text)}
+            autoFocus
           />
-          {search.length > 0 && (
-            <TouchableOpacity onPress={() => setSearch('')}>
-              <Ionicons name="close-circle" size={22} color={COLORS.textLight} />
+          {query.length > 0 && (
+            <TouchableOpacity onPress={() => setQuery('')}>
+              <Ionicons name="close-circle" size={20} color={COLORS.textMuted} />
             </TouchableOpacity>
           )}
         </View>
+        <TouchableOpacity onPress={() => navigation.goBack()}>
+          <Text style={styles.cancelText}>Cancel</Text>
+        </TouchableOpacity>
       </View>
 
-      <View style={styles.categoryScroll}>
-        {CATEGORIES.map((cat) => (
-          <TouchableOpacity 
-            key={cat} 
-            style={[styles.chip, activeCategory === cat && styles.activeChip]}
-            onPress={() => setActiveCategory(cat)}
-          >
-            <Text style={[styles.chipText, activeCategory === cat && styles.activeChipText]}>{cat}</Text>
+      {/* Filter chips */}
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chipScroll} contentContainerStyle={styles.chipRow}>
+        <TouchableOpacity style={styles.filterChip}>
+          <Text style={styles.filterChipText}>Filters</Text>
+          <Ionicons name="chevron-down" size={14} color={COLORS.orange} />
+        </TouchableOpacity>
+        {FILTER_CHIPS.map((c) => (
+          <TouchableOpacity key={c} style={styles.chip}>
+            <Text style={styles.chipText}>{c}</Text>
           </TouchableOpacity>
         ))}
-      </View>
+      </ScrollView>
 
-      <FlatList
-        data={MOCK_PRODUCTS}
-        renderItem={renderProduct}
-        keyExtractor={(item) => item.id}
-        numColumns={2}
-        columnWrapperStyle={styles.grid}
-        contentContainerStyle={{ paddingBottom: 100, paddingHorizontal: 20 }}
-        showsVerticalScrollIndicator={false}
-      />
-    </SafeAreaView>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 120 }}>
+        {!query && (
+          <>
+            {/* Recent searches */}
+            <Text style={styles.sectionTitle}>Recent searches</Text>
+            {recent.map((r, i) => (
+              <TouchableOpacity key={r} style={[styles.recentRow, i === recent.length - 1 && { borderBottomWidth: 0 }]} onPress={() => setQuery(r)}>
+                <Ionicons name="time-outline" size={18} color={COLORS.textMuted} />
+                <Text style={styles.recentText}>{r}</Text>
+                <TouchableOpacity onPress={() => setRecent(recent.filter((x) => x !== r))}>
+                  <Ionicons name="close" size={18} color={COLORS.textMuted} />
+                </TouchableOpacity>
+              </TouchableOpacity>
+            ))}
+
+            {/* Trending tags */}
+            <Text style={[styles.sectionTitle, { marginTop: 26 }]}>Trending now</Text>
+            <View style={styles.tagGrid}>
+              {TRENDING_TAGS.map((t) => (
+                <TouchableOpacity key={t} style={styles.tag} onPress={() => setQuery(t.replace('#', ''))}>
+                  <Text style={styles.tagText}>{t}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </>
+        )}
+
+        <Text style={[styles.sectionTitle, { marginTop: 26 }]}>Suggested for you</Text>
+        <View style={styles.grid}>
+          {results.map((p) => (
+            <ProductCard key={p.id} product={p} onPress={() => navigation.navigate('ProductDetail', { id: p.id })} />
+          ))}
+        </View>
+      </ScrollView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: COLORS.background },
-  header: { paddingHorizontal: 20, paddingTop: 10 },
-  searchBar: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFF', padding: 15, borderRadius: 20, shadowColor: '#000', shadowOpacity: 0.05, elevation: 2 },
-  searchInput: { flex: 1, marginHorizontal: 10, fontSize: 16, color: COLORS.textDark },
-  categoryScroll: { flexDirection: 'row', paddingHorizontal: 20, marginTop: 20, marginBottom: 10 },
-  chip: { paddingHorizontal: 20, paddingVertical: 10, borderRadius: 20, backgroundColor: '#FFF', marginRight: 10, shadowColor: '#000', shadowOpacity: 0.05, elevation: 2 },
-  activeChip: { backgroundColor: COLORS.primary },
-  chipText: { color: COLORS.textDark, fontWeight: '600' },
-  activeChipText: { color: '#FFF' },
-  grid: { justifyContent: 'space-between' },
-  productCard: { width: '48%', backgroundColor: '#FFF', borderRadius: 25, padding: 15, marginBottom: 20, shadowColor: '#000', shadowOpacity: 0.05, elevation: 3 },
-  imagePlaceholder: { height: 120, backgroundColor: '#F0F0F0', borderRadius: 20, justifyContent: 'center', alignItems: 'center', marginBottom: 15 },
-  productName: { fontSize: 15, fontWeight: '700', color: COLORS.textDark, marginBottom: 5 },
-  productPrice: { fontSize: 16, fontWeight: '800', color: COLORS.primary },
+  container: { flex: 1, backgroundColor: COLORS.background, paddingTop: 55 },
+  topRow: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 20 },
+  inputWrap: { flex: 1, flexDirection: 'row', alignItems: 'center', backgroundColor: COLORS.surface, borderWidth: 1, borderColor: COLORS.border, borderRadius: RADIUS.md, height: 48, paddingHorizontal: 12, marginRight: 12 },
+  inputIcon: { marginRight: 8 },
+  input: { flex: 1, fontSize: 14, fontWeight: '600', color: COLORS.textDark },
+  cancelText: { fontSize: 14, fontWeight: '700', color: COLORS.navy },
+  chipScroll: { marginTop: 14 },
+  chipRow: { paddingHorizontal: 20 },
+  filterChip: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 14, paddingVertical: 8, borderRadius: RADIUS.pill, borderWidth: 1.5, borderColor: COLORS.orange, backgroundColor: COLORS.orangeSoft, marginRight: 8 },
+  filterChipText: { fontSize: 13, fontWeight: '700', color: COLORS.orange, marginRight: 4 },
+  chip: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: RADIUS.pill, backgroundColor: COLORS.surface, borderWidth: 1, borderColor: COLORS.border, marginRight: 8 },
+  chipText: { fontSize: 13, fontWeight: '600', color: COLORS.navy },
+  sectionTitle: { fontSize: 17, fontWeight: '800', color: COLORS.navy, paddingHorizontal: 20, marginBottom: 12 },
+  recentRow: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 20, paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: COLORS.borderLight },
+  recentText: { flex: 1, fontSize: 14, fontWeight: '600', color: COLORS.textDark, marginLeft: 10 },
+  tagGrid: { flexDirection: 'row', flexWrap: 'wrap', paddingHorizontal: 20 },
+  tag: { width: '48%', backgroundColor: COLORS.chipBg, borderRadius: 10, paddingHorizontal: 14, paddingVertical: 12, marginBottom: 10, marginRight: '2%' },
+  tagText: { fontSize: 13, fontWeight: '600', color: COLORS.textDark },
+  grid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', paddingHorizontal: 20 },
 });
 
 export default SearchScreen;
