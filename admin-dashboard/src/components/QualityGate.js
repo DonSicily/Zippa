@@ -1,72 +1,100 @@
 import React, { useState } from 'react';
-
-const COLORS = { primary: '#004E89', accent: '#FF6B35', white: '#FFFFFF', textDark: '#0F172A', textLight: '#64748B', success: '#10B981', danger: '#EF4444', warning: '#F59E0B' };
+import { Eye, CheckCircle, AlertTriangle } from 'lucide-react';
+import { COLORS } from '../utils/colors';
 
 const QualityGate = () => {
-  const [products, setProducts] = useState([
-    { id: 'P-101', vendor: 'Shenzhen Tech Co.', name: 'Wireless Earbuds Pro', price: '¥120', images: 3, status: 'Pending' },
-    { id: 'P-102', vendor: 'Guangzhou Fashion', name: 'Oversized Campus Hoodie', price: '¥45', images: 2, status: 'Pending' },
-    { id: 'P-103', vendor: 'Yiwu Home Goods', name: 'LED Desk Lamp', price: '¥30', images: 1, status: 'Flagged' },
-  ]);
+  const [filter, setFilter] = useState('all');
+  const products = [
+    { id: 'BZ-101', name: 'Aero Pro Wireless Earbuds Pro', vendor: 'Shenzhen Tech Co.', loc: 'Shenzhen', price: '$58', time: '2h ago', assets: 3, score: 94, status: 'Pending' },
+    { id: 'HD-202', name: 'Oversized Campus Hoodie', vendor: 'Guangzhou Fashion', loc: 'Guangzhou', price: '$32', time: '3h ago', assets: 2, score: 78, status: 'Pending' },
+    { id: 'LP-303', name: 'Aurora LED Desk Lamp v2', vendor: 'Yiwu Home Goods', loc: 'Yiwu', price: '$18', time: '5h ago', assets: 4, score: 88, status: 'Flagged' },
+  ];
 
-  const handleAction = (id, action) => {
-    setProducts(products.filter(p => p.id !== id));
-    alert(`Product ${id} has been ${action === 'approve' ? 'approved and published' : 'rejected and notified to vendor'}.`);
+  const ScoreRing = ({ score }) => {
+    const radius = 16; const circ = 2 * Math.PI * radius;
+    const offset = circ - (score / 100) * circ;
+    const color = score >= 90 ? COLORS.success : score >= 70 ? COLORS.warning : COLORS.danger;
+    return (
+      <svg width="40" height="40" style={{ transform: 'rotate(-90deg)' }}>
+        <circle cx="20" cy="20" r={radius} fill="none" stroke="#F1F5F9" strokeWidth="3" />
+        <circle cx="20" cy="20" r={radius} fill="none" stroke={color} strokeWidth="3" strokeDasharray={circ} strokeDashoffset={offset} strokeLinecap="round" />
+        <text x="20" y="20" fill={color} fontSize="10" fontWeight="bold" textAnchor="middle" dy=".3em" style={{ transform: 'rotate(90deg)', transformOrigin: '20px 20px' }}>{score}</text>
+      </svg>
+    );
   };
 
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
         <div>
-          <h1 style={{ color: COLORS.textDark, margin: 0, fontSize: '24px' }}>Quality Gate 🛡️</h1>
-          <p style={{ color: COLORS.textLight, margin: '4px 0 0 0', fontSize: '14px' }}>Review and approve products before they go live on the student app.</p>
+          <h1 style={{ color: COLORS.navy, margin: 0, fontSize: '24px' }}>Quality Gate</h1>
+          <p style={{ color: COLORS.textMuted, margin: '4px 0 0 0', fontSize: '14px' }}>12 items pending review</p>
+        </div>
+        <div style={{ display: 'flex', gap: '12px' }}>
+          <div style={{ backgroundColor: COLORS.white, borderRadius: '8px', padding: '4px', display: 'flex', border: `1px solid ${COLORS.border}` }}>
+            {['All', 'Pending', 'Flagged'].map(f => (
+              <button key={f} onClick={() => setFilter(f.toLowerCase())} style={{ padding: '6px 12px', borderRadius: '6px', border: 'none', backgroundColor: filter === f.toLowerCase() ? COLORS.infoBg : 'transparent', color: filter === f.toLowerCase() ? COLORS.info : COLORS.textMuted, fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}>
+                {f} {f === 'Pending' && <span style={{ marginLeft: '4px' }}>1</span>}
+              </button>
+            ))}
+          </div>
+          <button style={{ backgroundColor: COLORS.white, border: `1px solid ${COLORS.border}`, padding: '8px 16px', borderRadius: '8px', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}>Bulk Actions</button>
         </div>
       </div>
 
-      <div style={{ backgroundColor: COLORS.white, borderRadius: '12px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', overflow: 'hidden' }}>
+      <div style={{ display: 'flex', gap: '12px', marginBottom: '24px' }}>
+        <span style={{ backgroundColor: COLORS.warningBg, color: '#92400E', padding: '6px 12px', borderRadius: '20px', fontSize: '13px', fontWeight: '600' }}>Pending 12</span>
+        <span style={{ backgroundColor: COLORS.successBg, color: COLORS.success, padding: '6px 12px', borderRadius: '20px', fontSize: '13px', fontWeight: '600' }}>Approved today 28</span>
+        <span style={{ backgroundColor: COLORS.dangerBg, color: COLORS.danger, padding: '6px 12px', borderRadius: '20px', fontSize: '13px', fontWeight: '600' }}>Rejected today 3</span>
+      </div>
+
+      <div style={{ backgroundColor: COLORS.white, borderRadius: '12px', boxShadow: SHADOWS.card, overflow: 'hidden' }}>
         <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
           <thead>
-            <tr style={{ backgroundColor: '#F8FAFC', borderBottom: '1px solid #E2E8F0' }}>
-              <th style={{ padding: '16px', color: COLORS.textLight, fontSize: '12px', fontWeight: '600', textTransform: 'uppercase' }}>PRODUCT</th>
-              <th style={{ padding: '16px', color: COLORS.textLight, fontSize: '12px', fontWeight: '600', textTransform: 'uppercase' }}>VENDOR</th>
-              <th style={{ padding: '16px', color: COLORS.textLight, fontSize: '12px', fontWeight: '600', textTransform: 'uppercase' }}>PRICE</th>
-              <th style={{ padding: '16px', color: COLORS.textLight, fontSize: '12px', fontWeight: '600', textTransform: 'uppercase' }}>ASSETS</th>
-              <th style={{ padding: '16px', color: COLORS.textLight, fontSize: '12px', fontWeight: '600', textTransform: 'uppercase' }}>STATUS</th>
-              <th style={{ padding: '16px', color: COLORS.textLight, fontSize: '12px', fontWeight: '600', textTransform: 'uppercase', textAlign: 'right' }}>ACTIONS</th>
+            <tr style={{ backgroundColor: '#F8FAFC', borderBottom: `1px solid ${COLORS.border}` }}>
+              {['Product', 'Vendor', 'Price', 'Submitted', 'Assets', 'Quality Score', 'Status', 'Actions'].map(h => (
+                <th key={h} style={{ padding: '16px', color: COLORS.textMuted, fontSize: '12px', fontWeight: '600', textTransform: 'uppercase' }}>{h}</th>
+              ))}
             </tr>
           </thead>
           <tbody>
             {products.map((p) => (
-              <tr key={p.id} style={{ borderBottom: '1px solid #F1F5F9' }}>
-                <td style={{ padding: '16px', fontWeight: '600', color: COLORS.textDark }}>{p.name}</td>
-                <td style={{ padding: '16px', color: COLORS.textLight }}>{p.vendor}</td>
-                <td style={{ padding: '16px', color: COLORS.textDark }}>{p.price}</td>
+              <tr key={p.id} style={{ borderBottom: `1px solid ${COLORS.border}` }}>
                 <td style={{ padding: '16px' }}>
-                  <span style={{ color: p.images < 3 ? COLORS.danger : COLORS.success, fontSize: '13px', fontWeight: '500' }}>
-                    {p.images} images {p.images < 3 && '(Min 3 required)'}
-                  </span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <div style={{ width: '40px', height: '40px', backgroundColor: '#F1F5F9', borderRadius: '8px' }} />
+                    <div>
+                      <div style={{ fontWeight: '600', color: COLORS.textMain, fontSize: '14px' }}>{p.name}</div>
+                      <div style={{ color: COLORS.textMuted, fontSize: '12px' }}>{p.id}</div>
+                    </div>
+                  </div>
                 </td>
+                <td style={{ padding: '16px', fontSize: '14px' }}>
+                  <div style={{ fontWeight: '600', color: COLORS.textMain }}>{p.vendor}</div>
+                  <div style={{ color: COLORS.textMuted, fontSize: '12px', display: 'flex', alignItems: 'center', gap: '4px' }}>📍 {p.loc}</div>
+                </td>
+                <td style={{ padding: '16px', fontWeight: '600', color: COLORS.textMain }}>{p.price}</td>
+                <td style={{ padding: '16px', color: COLORS.textMuted, fontSize: '14px' }}>{p.time}</td>
+                <td style={{ padding: '16px', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  {p.assets} images {p.assets < 3 ? <AlertTriangle size={14} color={COLORS.warning} /> : <CheckCircle size={14} color={COLORS.success} />}
+                </td>
+                <td style={{ padding: '16px' }}><ScoreRing score={p.score} /></td>
                 <td style={{ padding: '16px' }}>
-                  <span style={{ 
-                    padding: '4px 10px', borderRadius: '12px', fontSize: '12px', fontWeight: '600',
-                    backgroundColor: p.status === 'Pending' ? '#FEF3C7' : '#FEE2E2',
-                    color: p.status === 'Pending' ? '#92400E' : '#991B1B'
-                  }}>
+                  <span style={{ padding: '4px 10px', borderRadius: '12px', fontSize: '12px', fontWeight: '600', backgroundColor: p.status === 'Pending' ? COLORS.warningBg : COLORS.dangerBg, color: p.status === 'Pending' ? '#92400E' : COLORS.danger }}>
                     {p.status}
                   </span>
                 </td>
-                <td style={{ padding: '16px', textAlign: 'right' }}>
-                  <button onClick={() => handleAction(p.id, 'reject')} style={{ color: COLORS.danger, background: 'none', border: '1px solid #FECACA', padding: '6px 12px', borderRadius: '6px', cursor: 'pointer', fontWeight: '600', marginRight: '8px', fontSize: '13px' }}>Reject</button>
-                  <button onClick={() => handleAction(p.id, 'approve')} style={{ color: COLORS.white, backgroundColor: COLORS.success, border: 'none', padding: '6px 12px', borderRadius: '6px', cursor: 'pointer', fontWeight: '600', fontSize: '13px' }}>Approve</button>
+                <td style={{ padding: '16px', display: 'flex', gap: '8px', alignItems: 'center' }}>
+                  <button style={{ backgroundColor: COLORS.success, color: 'white', border: 'none', padding: '6px 12px', borderRadius: '6px', fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}>Approve</button>
+                  <button style={{ backgroundColor: 'white', color: COLORS.danger, border: `1px solid ${COLORS.danger}`, padding: '6px 12px', borderRadius: '6px', fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}>Reject</button>
+                  <Eye size={16} color={COLORS.textMuted} style={{ cursor: 'pointer' }} />
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
-        {products.length === 0 && <div style={{ padding: '40px', textAlign: 'center', color: COLORS.textLight }}>All caught up! No pending products.</div>}
       </div>
     </div>
   );
 };
-
 export default QualityGate;
