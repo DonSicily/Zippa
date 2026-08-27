@@ -3,13 +3,13 @@ import { View, Text, Image, ScrollView, TouchableOpacity, StyleSheet, Alert } fr
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { useAuth } from '../../context/AuthContext';
-import { COLORS } from '../../utils/colors';
+import { COLORS, CARD } from '../../utils/colors';
 
 const MENU_ITEMS = [
-  { id: 'Orders', title: 'My Orders', icon: 'bag-handle-outline', color: '#E0D4FC' },
-  { id: 'Addresses', title: 'Delivery Addresses', icon: 'location-outline', color: '#D4FCEF' },
-  { id: 'Ambassador', title: 'Campus Ambassador', icon: 'star-outline', color: '#FCF4D4' },
-  { id: 'Settings', title: 'Settings', icon: 'settings-outline', color: '#F0F0F0' },
+  { id: 'Orders', title: 'My Orders', icon: 'bag-handle-outline', bg: COLORS.goldSoft, fg: COLORS.navy },
+  { id: 'Addresses', title: 'Delivery Addresses', icon: 'location-outline', bg: COLORS.successSoft, fg: COLORS.success },
+  { id: 'Ambassador', title: 'Campus Ambassador', icon: 'star-outline', bg: COLORS.orangeSoft, fg: COLORS.orange },
+  { id: 'Settings', title: 'Settings', icon: 'settings-outline', bg: COLORS.chipBg, fg: COLORS.textLight },
 ];
 
 const ProfileScreen = () => {
@@ -19,43 +19,36 @@ const ProfileScreen = () => {
   const handleLogout = () => {
     Alert.alert('Logout', 'Are you sure you want to log out?', [
       { text: 'Cancel', style: 'cancel' },
-      { text: 'Yes, log out', onPress: logout, style: 'destructive' }
+      { text: 'Yes, log out', onPress: logout, style: 'destructive' },
     ]);
   };
 
   return (
     <View style={styles.container}>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 120 }}>
-        {/* Profile Header */}
         <View style={styles.header}>
           <Image source={{ uri: user?.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200' }} style={styles.avatar} />
           <Text style={styles.name}>{user?.firstName || 'Bestie'} {user?.lastName || 'User'}</Text>
           <Text style={styles.email}>{user?.email || 'bestie@bestiez.com'}</Text>
           <TouchableOpacity style={styles.editBtn}>
-            <Ionicons name="pencil" size={16} color={COLORS.primary} />
+            <Ionicons name="pencil" size={14} color={COLORS.navy} />
             <Text style={styles.editText}>Edit Profile</Text>
           </TouchableOpacity>
         </View>
 
-        {/* Menu Items */}
         <View style={styles.menuContainer}>
           {MENU_ITEMS.map((item) => (
-            <TouchableOpacity 
-              key={item.id} 
-              style={styles.menuItem}
-              onPress={() => navigation.navigate(item.id)}
-            >
-              <View style={[styles.iconBox, { backgroundColor: item.color }]}>
-                <Ionicons name={item.icon} size={22} color={COLORS.textDark} />
+            <TouchableOpacity key={item.id} style={styles.menuItem} onPress={() => navigation.navigate(item.id)}>
+              <View style={[styles.iconBox, { backgroundColor: item.bg }]}>
+                <Ionicons name={item.icon} size={20} color={item.fg} />
               </View>
               <Text style={styles.menuText}>{item.title}</Text>
-              <Ionicons name="chevron-forward" size={20} color={COLORS.textLight} />
+              <Ionicons name="chevron-forward" size={18} color={COLORS.textMuted} />
             </TouchableOpacity>
           ))}
-
           <TouchableOpacity style={styles.menuItem} onPress={handleLogout}>
-            <View style={[styles.iconBox, { backgroundColor: '#FFE5E5' }]}>
-              <Ionicons name="log-out-outline" size={22} color={COLORS.error} />
+            <View style={[styles.iconBox, { backgroundColor: COLORS.errorSoft }]}>
+              <Ionicons name="log-out-outline" size={20} color={COLORS.error} />
             </View>
             <Text style={[styles.menuText, { color: COLORS.error }]}>Log Out</Text>
           </TouchableOpacity>
@@ -66,17 +59,17 @@ const ProfileScreen = () => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: COLORS.background, paddingTop: 50 },
-  header: { alignItems: 'center', paddingVertical: 30, paddingHorizontal: 20 },
-  avatar: { width: 100, height: 100, borderRadius: 50, borderWidth: 3, borderColor: COLORS.accent, marginBottom: 15 },
-  name: { fontSize: 24, fontWeight: '900', color: COLORS.textDark },
-  email: { fontSize: 14, color: COLORS.textLight, marginBottom: 15 },
-  editBtn: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#E0D4FC', paddingHorizontal: 15, paddingVertical: 8, borderRadius: 20 },
-  editText: { color: COLORS.primary, fontWeight: '600', marginLeft: 5, fontSize: 14 },
+  container: { flex: 1, backgroundColor: COLORS.background, paddingTop: 55 },
+  header: { alignItems: 'center', paddingVertical: 26, paddingHorizontal: 20 },
+  avatar: { width: 96, height: 96, borderRadius: 48, borderWidth: 2, borderColor: COLORS.gold, marginBottom: 14 },
+  name: { fontSize: 22, fontWeight: '800', color: COLORS.navy },
+  email: { fontSize: 14, color: COLORS.textLight, marginBottom: 14 },
+  editBtn: { flexDirection: 'row', alignItems: 'center', backgroundColor: COLORS.surfaceSoft, borderWidth: 1, borderColor: COLORS.border, paddingHorizontal: 16, paddingVertical: 9, borderRadius: 999 },
+  editText: { color: COLORS.navy, fontWeight: '700', marginLeft: 6, fontSize: 13 },
   menuContainer: { paddingHorizontal: 20 },
-  menuItem: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFF', padding: 18, borderRadius: 16, marginBottom: 12, shadowColor: '#000', shadowOpacity: 0.05, elevation: 2 },
-  iconBox: { width: 40, height: 40, borderRadius: 12, justifyContent: 'center', alignItems: 'center', marginRight: 15 },
-  menuText: { flex: 1, fontSize: 16, fontWeight: '700', color: COLORS.textDark },
+  menuItem: { ...CARD, flexDirection: 'row', alignItems: 'center', padding: 16, marginBottom: 12 },
+  iconBox: { width: 40, height: 40, borderRadius: 10, justifyContent: 'center', alignItems: 'center', marginRight: 14 },
+  menuText: { flex: 1, fontSize: 15, fontWeight: '700', color: COLORS.navy },
 });
 
 export default ProfileScreen;
