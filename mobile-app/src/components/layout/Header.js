@@ -4,25 +4,28 @@ import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { COLORS } from '../../utils/colors';
 
-const Header = ({ title, showBack = true, rightAction, rightIcon }) => {
+// v2 Header — bare navy chevron, centered navy title, contextual orange text action
+const Header = ({ title, showBack = true, rightLabel, onRightPress, rightIcon, onRightIconPress }) => {
   const navigation = useNavigation();
-
   return (
     <View style={styles.container}>
-      <View style={styles.left}>
+      <View style={styles.side}>
         {showBack && (
-          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.iconBtn}>
-            <Ionicons name="arrow-back" size={24} color={COLORS.textDark} />
+          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
+            <Ionicons name="chevron-back" size={26} color={COLORS.navy} />
           </TouchableOpacity>
         )}
       </View>
-      
       <Text style={styles.title} numberOfLines={1}>{title}</Text>
-      
-      <View style={styles.right}>
-        {rightAction && (
-          <TouchableOpacity onPress={rightAction} style={styles.iconBtn}>
-            <Ionicons name={rightIcon || 'ellipsis-horizontal'} size={24} color={COLORS.textDark} />
+      <View style={[styles.side, styles.sideRight]}>
+        {rightLabel && (
+          <TouchableOpacity onPress={onRightPress}>
+            <Text style={styles.rightLabel}>{rightLabel}</Text>
+          </TouchableOpacity>
+        )}
+        {rightIcon && (
+          <TouchableOpacity onPress={onRightIconPress}>
+            <Ionicons name={rightIcon} size={22} color={COLORS.navy} />
           </TouchableOpacity>
         )}
       </View>
@@ -33,13 +36,13 @@ const Header = ({ title, showBack = true, rightAction, rightIcon }) => {
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
-    paddingHorizontal: 20, paddingTop: 50, paddingBottom: 15,
-    backgroundColor: COLORS.background,
+    paddingHorizontal: 20, paddingTop: 50, paddingBottom: 12,
   },
-  left: { width: 40 },
-  right: { width: 40, alignItems: 'flex-end' },
-  iconBtn: { width: 40, height: 40, borderRadius: 20, backgroundColor: '#FFF', justifyContent: 'center', alignItems: 'center', shadowColor: '#000', shadowOpacity: 0.05, elevation: 2 },
-  title: { flex: 1, fontSize: 20, fontWeight: '800', color: COLORS.textDark, textAlign: 'center' },
+  side: { width: 60 },
+  sideRight: { alignItems: 'flex-end' },
+  backBtn: { width: 32, height: 32, justifyContent: 'center', alignItems: 'center' },
+  title: { flex: 1, fontSize: 17, fontWeight: '800', color: COLORS.navy, textAlign: 'center' },
+  rightLabel: { fontSize: 14, fontWeight: '700', color: COLORS.orange },
 });
 
 export default Header;
