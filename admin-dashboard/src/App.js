@@ -1,116 +1,91 @@
 import React, { useState } from 'react';
+import { Home, ShieldCheck, Users, Package, Bell, CreditCard, GraduationCap, UserCircle, FileText, Settings, LogOut, Calendar } from 'lucide-react';
 import Login from './components/Login';
+import Dashboard from './components/Dashboard'; // New File
 import QualityGate from './components/QualityGate';
-import VendorManager from './components/VendorManager';
 import OrderTracker from './components/OrderTracker';
-import Financials from './components/Financials';
-import CampusHub from './components/CampusHub';
-import Notifications from './components/Notifications';
-import AuditLogs from './components/AuditLogs';
-import Settings from './components/Settings';
-
-// --- ADMIN BRAND COLORS ---
-const COLORS = {
-  primary: '#004E89',   // Navy Blue (Authoritative)
-  accent: '#FF6B35',    // Orange (Action)
-  bg: '#F8FAFC',        // Very light slate
-  sidebar: '#0F172A',   // Dark slate for sidebar
-  white: '#FFFFFF',
-  textDark: '#0F172A',
-  textLight: '#64748B',
-};
+// ... import other components
+import { COLORS } from './utils/colors';
 
 const App = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [activeTab, setActiveTab] = useState('quality');
+  const [activeTab, setActiveTab] = useState('overview');
 
-  // If not logged in, show Admin Login
-  if (!isAuthenticated) {
-    return <Login onLoginSuccess={() => setIsAuthenticated(true)} />;
-  }
+  if (!isAuthenticated) return <Login onLoginSuccess={() => setIsAuthenticated(true)} />;
 
-  const renderContent = () => {
-    switch (activeTab) {
-      case 'quality': return <QualityGate />;
-      case 'vendors': return <VendorManager />;
-      case 'orders': return <OrderTracker />;
-      case 'financials': return <Financials />;
-      case 'campuses': return <CampusHub />;
-      case 'notifications': return <Notifications />;
-      case 'audit': return <AuditLogs />;
-      case 'settings': return <Settings />;
-      default: return <QualityGate />;
-    }
-  };
-
-  const NavItem = ({ id, label, icon, badge }) => (
-    <div 
-      onClick={() => setActiveTab(id)}
-      style={{
-        padding: '12px 16px',
-        cursor: 'pointer',
-        borderRadius: '6px',
-        marginBottom: '4px',
-        backgroundColor: activeTab === id ? 'rgba(255,255,255,0.1)' : 'transparent',
-        color: activeTab === id ? COLORS.white : '#94A3B8',
-        fontWeight: activeTab === id ? '600' : '400',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        fontSize: '14px',
-        transition: 'all 0.2s'
-      }}
-    >
+  const NavItem = ({ id, label, icon: Icon, badge }) => (
+    <div onClick={() => setActiveTab(id)} style={{
+      padding: '10px 12px', cursor: 'pointer', borderRadius: '6px', marginBottom: '4px',
+      backgroundColor: activeTab === id ? '#1E3A8A' : 'transparent', // Blue highlight
+      color: activeTab === id ? 'white' : '#94A3B8',
+      fontWeight: activeTab === id ? '600' : '400',
+      display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '14px', transition: 'all 0.2s'
+    }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-        <span style={{ fontSize: '18px' }}>{icon}</span> {label}
+        <Icon size={18} /> {label}
       </div>
-      {badge && <span style={{ backgroundColor: COLORS.accent, color: COLORS.white, padding: '2px 8px', borderRadius: '10px', fontSize: '11px', fontWeight: 'bold' }}>{badge}</span>}
+      {badge && <span style={{ backgroundColor: COLORS.danger, color: 'white', padding: '2px 8px', borderRadius: '10px', fontSize: '11px', fontWeight: 'bold' }}>{badge}</span>}
     </div>
   );
 
+  const SectionTitle = ({ title }) => <div style={{ color: '#64748B', fontSize: '11px', fontWeight: '600', textTransform: 'uppercase', marginBottom: '12px', marginTop: '24px', paddingLeft: '12px', letterSpacing: '0.5px' }}>{title}</div>;
+
   return (
-    <div style={{ display: 'flex', height: '100vh', fontFamily: 'Inter, system-ui, sans-serif', backgroundColor: COLORS.bg }}>
+    <div style={{ display: 'flex', height: '100vh', fontFamily: 'Inter, system-ui, sans-serif', backgroundColor: COLORS.cream }}>
       {/* Sidebar */}
-      <div style={{ width: '260px', backgroundColor: COLORS.sidebar, padding: '24px 16px', display: 'flex', flexDirection: 'column', borderRight: '1px solid #1E293B' }}>
+      <div style={{ width: '260px', backgroundColor: COLORS.navy, padding: '24px 16px', display: 'flex', flexDirection: 'column', borderRight: '1px solid #1E293B' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '40px', paddingLeft: '8px' }}>
-          <div style={{ width: '32px', height: '32px', backgroundColor: COLORS.accent, borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 'bold' }}>B</div>
-          <h2 style={{ color: COLORS.white, margin: 0, fontSize: '18px', fontWeight: '700' }}>Bestiez Admin</h2>
+          <div style={{ width: '32px', height: '32px', border: `1px solid ${COLORS.gold}`, borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: COLORS.gold, fontWeight: 'bold' }}>B</div>
+          <h2 style={{ color: 'white', margin: 0, fontSize: '18px', fontWeight: '700' }}>Bestiez HQ</h2>
         </div>
         
-        <div style={{ color: '#64748B', fontSize: '11px', fontWeight: '600', textTransform: 'uppercase', marginBottom: '12px', paddingLeft: '12px', letterSpacing: '0.5px' }}>Operations</div>
-        <NavItem id="quality" label="Quality Gate" icon="️" badge="12" />
-        <NavItem id="vendors" label="Vendor Management" icon="🏭" />
-        <NavItem id="orders" label="Global Logistics" icon="🌍" />
-        <NavItem id="notifications" label="Push Notifications" icon="📢" />
+        <SectionTitle title="Operations" />
+        <NavItem id="overview" label="Overview" icon={Home} />
+        <NavItem id="quality" label="Quality Gate" icon={ShieldCheck} badge="12" />
+        <NavItem id="vendors" label="Vendors" icon={Users} />
+        <NavItem id="orders" label="Orders & Logistics" icon={Package} />
+        <NavItem id="notifications" label="Notifications" icon={Bell} />
         
-        <div style={{ color: '#64748B', fontSize: '11px', fontWeight: '600', textTransform: 'uppercase', marginBottom: '12px', marginTop: '24px', paddingLeft: '12px', letterSpacing: '0.5px' }}>Growth & Finance</div>
-        <NavItem id="financials" label="Financials" icon="" />
-        <NavItem id="campuses" label="Campus & Ambassadors" icon="🎓" />
+        <SectionTitle title="Growth & Finance" />
+        <NavItem id="financials" label="Financials" icon={CreditCard} />
+        <NavItem id="campus" label="Campus Hub" icon={GraduationCap} />
+        <NavItem id="ambassadors" label="Ambassadors" icon={UserCircle} />
         
-        <div style={{ color: '#64748B', fontSize: '11px', fontWeight: '600', textTransform: 'uppercase', marginBottom: '12px', marginTop: '24px', paddingLeft: '12px', letterSpacing: '0.5px' }}>System</div>
-        <NavItem id="audit" label="Audit Logs" icon="🔒" />
-        <NavItem id="settings" label="Platform Settings" icon="⚙️" />
-        
-        <div style={{ marginTop: 'auto', padding: '16px', backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div>
-            <div style={{ color: COLORS.white, fontSize: '13px', fontWeight: '600' }}>Super Admin</div>
-            <div style={{ color: '#94A3B8', fontSize: '12px', marginTop: '4px' }}>founder@bestiez.com</div>
+        <SectionTitle title="System" />
+        <NavItem id="audit" label="Audit Logs" icon={FileText} />
+        <NavItem id="settings" label="Settings" icon={Settings} />
+
+        <div style={{ marginTop: 'auto', padding: '16px', backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <div style={{ width: '36px', height: '36px', backgroundColor: COLORS.gold, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: COLORS.navy, fontWeight: 'bold' }}>DA</div>
+          <div style={{ flex: 1 }}>
+            <div style={{ color: 'white', fontSize: '13px', fontWeight: '600' }}>Daniel Adeniyi</div>
+            <div style={{ color: '#94A3B8', fontSize: '11px' }}>Founder & CEO</div>
           </div>
-          <div 
-            onClick={() => setIsAuthenticated(false)} 
-            style={{ color: '#EF4444', fontSize: '12px', cursor: 'pointer', fontWeight: '600' }}
-          >
-            Logout
-          </div>
+          <LogOut size={18} color="#94A3B8" style={{ cursor: 'pointer' }} onClick={() => setIsAuthenticated(false)} />
         </div>
       </div>
 
       {/* Main Content */}
-      <div style={{ flex: 1, padding: '32px', overflowY: 'auto' }}>
-        {renderContent()}
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+        {/* Topbar */}
+        <div style={{ padding: '24px 32px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', backgroundColor: COLORS.cream }}>
+          <div>
+            <h1 style={{ color: COLORS.navy, margin: 0, fontSize: '28px', fontWeight: '700' }}>Good afternoon, Daniel</h1>
+            <p style={{ color: COLORS.textMuted, margin: '4px 0 0 0', fontSize: '14px' }}>Tuesday, August 18, 2026 · Lagos</p>
+          </div>
+          <button style={{ backgroundColor: COLORS.navy, color: 'white', border: 'none', padding: '10px 16px', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', fontWeight: '600', cursor: 'pointer' }}>
+            <Calendar size={16} /> Last 30 days
+          </button>
+        </div>
+        
+        <div style={{ flex: 1, padding: '0 32px 32px 32px', overflowY: 'auto' }}>
+          {activeTab === 'overview' && <Dashboard />}
+          {activeTab === 'quality' && <QualityGate />}
+          {activeTab === 'orders' && <OrderTracker />}
+          {/* ... other tabs ... */}
+        </div>
       </div>
     </div>
   );
 };
-
 export default App;
