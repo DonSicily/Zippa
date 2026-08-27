@@ -1,81 +1,77 @@
 import React from 'react';
 import { View, Text, ScrollView, Image, TouchableOpacity, StyleSheet, SafeAreaView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { COLORS } from '../../utils/colors';
+import { COLORS, CARD, RADIUS } from '../../utils/colors';
+import Button from '../../components/common/Button';
 
 const FLASH_DROPS = [
-  { id: '1', title: 'Streetwear Essentials', time: '02:14:30', image: 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?w=600', color: '#E0D4FC' },
-  { id: '2', title: 'Tech Gadgets', time: '05:00:00', image: 'https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=600', color: '#D4FCEF' },
+  { id: '1', title: 'Streetwear Essentials', time: '02:14:30', image: 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?w=600' },
+  { id: '2', title: 'Tech Gadgets', time: '05:00:00', image: 'https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=600' },
 ];
 
-const CampusDropsScreen = () => {
-  return (
-    <SafeAreaView style={styles.container}>
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 120 }}>
-        <View style={styles.header}>
-          <Text style={styles.title}>Exclusive Drops 🔥</Text>
-          <Text style={styles.subtitle}>Fresh from the factory, straight to your campus.</Text>
-        </View>
+const CampusDropsScreen = () => (
+  <SafeAreaView style={styles.container}>
+    <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 120 }}>
+      <View style={styles.header}>
+        <Text style={styles.title}>Exclusive Drops 🔥</Text>
+        <Text style={styles.subtitle}>Fresh from the factory, straight to your campus.</Text>
+      </View>
 
-        {FLASH_DROPS.map((drop) => (
-          <TouchableOpacity key={drop.id} style={[styles.flashCard, { backgroundColor: drop.color }]}>
-            <Image source={{ uri: drop.image }} style={styles.flashImage} />
-            <View style={styles.flashOverlay}>
-              <View>
-                <Text style={styles.flashTitle}>{drop.title}</Text>
-                <View style={styles.timerContainer}>
-                  <Ionicons name="time-outline" size={16} color="#FFF" />
-                  <Text style={styles.timerText}>Ends in {drop.time}</Text>
-                </View>
+      {FLASH_DROPS.map((drop) => (
+        <TouchableOpacity key={drop.id} style={styles.flashCard} activeOpacity={0.92}>
+          <Image source={{ uri: drop.image }} style={styles.flashImage} />
+          <View style={styles.flashOverlay}>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.flashTitle}>{drop.title}</Text>
+              <View style={styles.timerRow}>
+                <Ionicons name="time-outline" size={15} color={COLORS.gold} />
+                <Text style={styles.timerText}>Ends in {drop.time}</Text>
               </View>
-              <TouchableOpacity style={styles.shopBtn}>
-                <Text style={styles.shopBtnText}>Shop Now</Text>
-              </TouchableOpacity>
             </View>
-          </TouchableOpacity>
+            <Button small title="Shop Now" onPress={() => {}} />
+          </View>
+        </TouchableOpacity>
+      ))}
+
+      <Text style={styles.sectionTitle}>Upcoming Drops</Text>
+      <View style={styles.upcomingGrid}>
+        {[1, 2].map((item) => (
+          <View key={item} style={styles.upcomingCard}>
+            <View style={styles.upcomingImage}>
+              <Ionicons name="shirt-outline" size={36} color={COLORS.navy} />
+            </View>
+            <Text style={styles.upcomingTitle}>Summer Collection</Text>
+            <Text style={styles.upcomingDate}>Drops Friday</Text>
+            <TouchableOpacity style={styles.notifyBtn}>
+              <Ionicons name="notifications-outline" size={14} color={COLORS.gold} />
+              <Text style={styles.notifyText}>Notify Me</Text>
+            </TouchableOpacity>
+          </View>
         ))}
-
-        <Text style={styles.sectionTitle}>Upcoming Drops</Text>
-        <View style={styles.upcomingGrid}>
-          {[1, 2].map((item) => (
-            <View key={item} style={styles.upcomingCard}>
-              <View style={styles.upcomingImage}>
-                <Ionicons name="shirt-outline" size={40} color={COLORS.primary} />
-              </View>
-              <Text style={styles.upcomingTitle}>Summer Collection</Text>
-              <Text style={styles.upcomingDate}>Drops Friday</Text>
-              <TouchableOpacity style={styles.notifyBtn}>
-                <Text style={styles.notifyText}>Notify Me</Text>
-              </TouchableOpacity>
-            </View>
-          ))}
-        </View>
-      </ScrollView>
-    </SafeAreaView>
-  );
-};
+      </View>
+    </ScrollView>
+  </SafeAreaView>
+);
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: COLORS.background },
-  header: { paddingHorizontal: 20, paddingTop: 20, paddingBottom: 20 },
-  title: { fontSize: 28, fontWeight: '900', color: COLORS.textDark },
-  subtitle: { fontSize: 16, color: COLORS.textLight, marginTop: 5 },
-  flashCard: { marginHorizontal: 20, height: 220, borderRadius: 30, marginBottom: 20, overflow: 'hidden', shadowColor: '#000', shadowOpacity: 0.1, shadowRadius: 15, elevation: 5 },
-  flashImage: { width: '100%', height: '100%' },
-  flashOverlay: { position: 'absolute', bottom: 0, left: 0, right: 0, padding: 20, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'space-between', flexDirection: 'row', alignItems: 'flex-end' },
-  flashTitle: { fontSize: 22, fontWeight: '900', color: '#FFF', marginBottom: 5 },
-  timerContainer: { flexDirection: 'row', alignItems: 'center' },
-  timerText: { color: '#FFF', fontWeight: '600', marginLeft: 5 },
-  shopBtn: { backgroundColor: COLORS.primary, paddingHorizontal: 20, paddingVertical: 10, borderRadius: 20 },
-  shopBtnText: { color: '#FFF', fontWeight: 'bold' },
-  sectionTitle: { fontSize: 20, fontWeight: '800', color: COLORS.textDark, paddingHorizontal: 20, marginBottom: 15 },
+  header: { paddingHorizontal: 20, paddingTop: 16, paddingBottom: 20 },
+  title: { fontSize: 26, fontWeight: '800', color: COLORS.navy },
+  subtitle: { fontSize: 14, color: COLORS.textLight, marginTop: 4 },
+  flashCard: { marginHorizontal: 20, height: 230, borderRadius: RADIUS.xl, marginBottom: 18, overflow: 'hidden', backgroundColor: COLORS.navy },
+  flashImage: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, resizeMode: 'cover', opacity: 0.85 },
+  flashOverlay: { position: 'absolute', bottom: 0, left: 0, right: 0, padding: 18, backgroundColor: 'rgba(14,42,71,0.72)', flexDirection: 'row', alignItems: 'flex-end' },
+  flashTitle: { fontSize: 20, fontWeight: '800', color: '#FFF', marginBottom: 6 },
+  timerRow: { flexDirection: 'row', alignItems: 'center' },
+  timerText: { color: COLORS.gold, fontWeight: '700', fontSize: 13, marginLeft: 5 },
+  sectionTitle: { fontSize: 18, fontWeight: '800', color: COLORS.navy, paddingHorizontal: 20, marginBottom: 14 },
   upcomingGrid: { flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: 20 },
-  upcomingCard: { width: '48%', backgroundColor: '#FFF', borderRadius: 25, padding: 15, shadowColor: '#000', shadowOpacity: 0.05, elevation: 3 },
-  upcomingImage: { height: 120, backgroundColor: '#F0F0F0', borderRadius: 20, justifyContent: 'center', alignItems: 'center', marginBottom: 15 },
-  upcomingTitle: { fontSize: 16, fontWeight: '700', color: COLORS.textDark },
-  upcomingDate: { fontSize: 14, color: COLORS.textLight, marginBottom: 15 },
-  notifyBtn: { backgroundColor: COLORS.highlight, paddingVertical: 10, borderRadius: 15, alignItems: 'center' },
-  notifyText: { color: COLORS.textDark, fontWeight: 'bold' },
+  upcomingCard: { ...CARD, width: '48%', padding: 14 },
+  upcomingImage: { height: 120, backgroundColor: COLORS.imageBg, borderRadius: 12, justifyContent: 'center', alignItems: 'center', marginBottom: 12 },
+  upcomingTitle: { fontSize: 15, fontWeight: '700', color: COLORS.navy },
+  upcomingDate: { fontSize: 13, color: COLORS.textLight, marginBottom: 14 },
+  notifyBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', backgroundColor: COLORS.goldSoft, paddingVertical: 10, borderRadius: 10 },
+  notifyText: { color: COLORS.gold, fontWeight: '700', fontSize: 13, marginLeft: 6 },
 });
 
 export default CampusDropsScreen;
