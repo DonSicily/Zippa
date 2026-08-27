@@ -4,14 +4,8 @@ import { View, TouchableOpacity, Text, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS } from '../utils/colors';
 import { useCart } from '../context/CartContext';
-// FIX: usePushNotifications() calls useNavigation(), which only works
-// inside a component rendered under NavigationContainer. AppNavigator.js
-// renders NavigationContainer itself, so the hook can't be called there —
-// TabNavigator (only ever rendered for authenticated users) is the right
-// place to register the push token.
 import { usePushNotifications } from '../hooks/usePushNotifications';
 
-// Import Main Screens (We will build these in Batch 8 & 9)
 import HomeScreen from '../screens/home/HomeScreen';
 import SearchScreen from '../screens/home/SearchScreen';
 import CampusDropsScreen from '../screens/home/CampusDropsScreen';
@@ -20,66 +14,39 @@ import ProfileScreen from '../screens/profile/ProfileScreen';
 
 const Tab = createBottomTabNavigator();
 
-// Custom Floating Tab Bar Component
+// v2 Tab Bar — flat white bar, labeled tabs, navy active + dot, orange cart badge
 const CustomTabBar = ({ state, descriptors, navigation }) => {
   const { cartCount } = useCart();
 
   return (
-    <View style={styles.tabBarContainer}>
-      <View style={styles.tabBar}>
+    <View style={styles.barWrap}>
+      <View style={styles.bar}>
         {state.routes.map((route, index) => {
-          const { options } = descriptors[route.key];
           const isFocused = state.index === index;
 
           const onPress = () => {
-            const event = navigation.emit({
-              type: 'tabPress',
-              target: route.key,
-              canPreventDefault: true,
-            });
-            if (!isFocused && !event.defaultPrevented) {
-              navigation.navigate(route.name);
-            }
+            const event = navigation.emit({ type: 'tabPress', target: route.key, canPreventDefault: true });
+            if (!isFocused && !event.defaultPrevented) navigation.navigate(route.name);
           };
 
-          // Center "Drops" Button Logic
-          if (route.name === 'Drops') {
-            return (
-              <TouchableOpacity
-                key={route.key}
-                onPress={onPress}
-                style={styles.centerButton}
-                activeOpacity={0.8}
-              >
-                <Ionicons name="bag-handle" size={26} color="#FFF" />
-              </TouchableOpacity>
-            );
-          }
-
-          // Standard Icons
-          let iconName;
-          if (route.name === 'Home') iconName = isFocused ? 'home' : 'home-outline';
-          if (route.name === 'Search') iconName = isFocused ? 'search' : 'search-outline';
-          if (route.name === 'Cart') iconName = isFocused ? 'cart' : 'cart-outline';
-          if (route.name === 'Profile') iconName = isFocused ? 'person' : 'person-outline';
+          const icon = { Home: 'home', Search: 'search', Drops: 'bag-handle', Cart: 'cart', Profile: 'person' }[route.name] || 'ellipse';
 
           return (
-            <TouchableOpacity
-              key={route.key}
-              onPress={onPress}
-              style={styles.tabItem}
-              activeOpacity={0.7}
-            >
-              <Ionicons 
-                name={iconName} 
-                size={26} 
-                color={isFocused ? COLORS.primary : COLORS.textLight} 
-              />
-              {route.name === 'Cart' && cartCount > 0 && (
-                <View style={styles.badge}>
-                  <Text style={styles.badgeText}>{cartCount > 9 ? '9+' : cartCount}</Text>
-                </View>
-              )}
+            <TouchableOpacity key={route.key} onPress={onPress} style={styles.tab} activeOpacity={0.7}>
+              <View style={styles.iconWrap}>
+                <Ionicons
+                  name={isFocused ? icon : `${icon}-outline`}
+                  size={22}
+                  color={isFocused ? COLORS.navy : COLORS.textMuted}
+                />
+                {route.name === 'Cart' && cartCount > 0 && (
+                  <View style={styles.badge}>
+                    <Text style={styles.badgeText}>{cartCount > 9 ? '9+' : cartCount}</Text>
+                  </View>
+                )}
+              </View>
+              <Text style={[styles.label, isFocused && styles.labelActive]}>{route.name}</Text>
+              <View style={[styles.dot, isFocused && styles.dotActive]} />
             </TouchableOpacity>
           );
         })}
@@ -89,13 +56,9 @@ const CustomTabBar = ({ state, descriptors, navigation }) => {
 };
 
 const TabNavigator = () => {
-  usePushNotifications(); // registers/refreshes the Expo push token with the backend
-
+  usePushNotifications();
   return (
-    <Tab.Navigator
-      tabBar={(props) => <CustomTabBar {...props} />}
-      screenOptions={{ headerShown: false }}
-    >
+    <Tab.Navigator tabBar={(props) => <CustomTabBar {...props} />} screenOptions={{ headerShown: false }}>
       <Tab.Screen name="Home" component={HomeScreen} />
       <Tab.Screen name="Search" component={SearchScreen} />
       <Tab.Screen name="Drops" component={CampusDropsScreen} />
@@ -106,65 +69,25 @@ const TabNavigator = () => {
 };
 
 const styles = StyleSheet.create({
-  tabBarContainer: {
-    position: 'absolute',
-    bottom: 25,
-    left: 20,
-    right: 20,
-    alignItems: 'center',
+  barWrap: {
+    position: 'absolute', bottom: 0, left: 0, right: 0,
+    backgroundColor: COLORS.surface,
+    borderTopWidth: 1, borderTopColor: COLORS.borderLight,
+    paddingTop: 10, paddingBottom: 26,
   },
-  tabBar: {
-    flexDirection: 'row',
-    backgroundColor: '#FFF',
-    borderRadius: 30,
-    paddingVertical: 12,
-    paddingHorizontal: 10,
-    justifyContent: 'space-around',
-    alignItems: 'center',
-    width: '100%',
-    shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowRadius: 20,
-    shadowOffset: { width: 0, height: 5 },
-    elevation: 10,
-  },
-  tabItem: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    position: 'relative',
-  },
-  centerButton: {
-    backgroundColor: COLORS.primary,
-    width: 55,
-    height: 55,
-    borderRadius: 27.5,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginTop: -30, // Floats above the bar
-    shadowColor: COLORS.primary,
-    shadowOpacity: 0.4,
-    shadowRadius: 10,
-    shadowOffset: { width: 0, height: 5 },
-    elevation: 8,
-  },
+  bar: { flexDirection: 'row' },
+  tab: { flex: 1, alignItems: 'center' },
+  iconWrap: { position: 'relative' },
   badge: {
-    position: 'absolute',
-    top: -5,
-    right: 15,
-    backgroundColor: COLORS.accent,
-    borderRadius: 10,
-    minWidth: 20,
-    height: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 4,
+    position: 'absolute', top: -7, right: -12,
+    backgroundColor: COLORS.orange, borderRadius: 9,
+    minWidth: 18, height: 18, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 4,
   },
-  badgeText: {
-    color: '#FFF',
-    fontSize: 10,
-    fontWeight: 'bold',
-  },
+  badgeText: { color: '#FFF', fontSize: 10, fontWeight: '700' },
+  label: { fontSize: 11, fontWeight: '600', color: COLORS.textMuted, marginTop: 4 },
+  labelActive: { color: COLORS.navy, fontWeight: '700' },
+  dot: { width: 4, height: 4, borderRadius: 2, marginTop: 4, backgroundColor: 'transparent' },
+  dotActive: { backgroundColor: COLORS.navy },
 });
 
 export default TabNavigator;
