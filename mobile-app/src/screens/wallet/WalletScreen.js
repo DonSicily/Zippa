@@ -1,159 +1,126 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, StyleSheet, SafeAreaView, RefreshControl } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import React, { useEffect, useState, useCallback } from 'react';
+import { View, Text, ScrollView, TouchableOpacity, StyleSheet, ActivityIndicator, RefreshControl } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useAuth } from '../../context/AuthContext';
+import { useNavigation } from '@react-navigation/native';
+import { COLORS, CARD, SHADOW } from '../../utils/colors';
+import Header from '../../components/layout/Header';
 import { getWalletBalance, getRecentTransactions } from '../../services/walletService';
-import { COLORS } from '../../utils/colors';
+
+const CREDIT_TYPES = ['credit', 'fund', 'refund', 'payout_reversal'];
 
 const WalletScreen = () => {
   const navigation = useNavigation();
-  const { user } = useAuth();
   const [balance, setBalance] = useState(0);
   const [transactions, setTransactions] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
-  const fetchData = async () => {
+  const load = useCallback(async () => {
     try {
-      const [balRes, transRes] = await Promise.all([
-        getWalletBalance(),
-        getRecentTransactions(5)
+      const [bal, txns] = await Promise.all([
+        getWalletBalance().catch(() => null),
+        getRecentTransactions(10).catch(() => null),
       ]);
-      setBalance(balRes.data.balance || 0);
-      setTransactions(transRes.data || []);
-    } catch (error) {
-      console.error('Wallet fetch error:', error);
+      setBalance(bal?.data?.balance ?? bal?.balance ?? 0);
+      setTransactions(txns?.data?.transactions ?? txns?.transactions ?? []);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
     }
-  };
+  }, []);
 
-  useEffect(() => { fetchData(); }, []);
-
-  const onRefresh = async () => {
-    setRefreshing(true);
-    await fetchData();
-    setRefreshing(false);
-  };
-
-  const formatCurrency = (amount) => `₦${amount.toLocaleString()}`;
+  useEffect(() => { load(); }, [load]);
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
-          <Ionicons name="arrow-back" size={24} color={COLORS.textDark} />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>My Wallet</Text>
-        <View style={{ width: 40 }} />
-      </View>
+    <View style={styles.container}>
+      <Header title="Campus Wallet" />
 
-      <ScrollView 
-        showsVerticalScrollIndicator={false} 
-        contentContainerStyle={{ paddingBottom: 100 }}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={COLORS.primary} />}
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 120 }}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); load(); }} tintColor={COLORS.navy} />}
       >
-        {/* Balance Hero Card */}
-        <View style={styles.heroCard}>
-          <Text style={styles.heroLabel}>Available Balance</Text>
-          <Text style={styles.heroBalance}>{formatCurrency(balance)}</Text>
-          <Text style={styles.heroSub}>Earn 5% cashback on every Bestiez order!</Text>
-          
-          <View style={styles.heroActions}>
-            <TouchableOpacity 
-              style={styles.heroBtn} 
-              onPress={() => navigation.navigate('FundWallet')}
-            >
-              <Ionicons name="add-circle" size={20} color="#FFF" />
-              <Text style={styles.heroBtnText}>Add Funds</Text>
+        {/* Balance card */}
+        <View style={styles.balanceCard}>
+          <Text style={styles.balanceLabel}>Available Balance</Text>
+          {loading ? (
+            <ActivityIndicator size="small" color={COLORS.gold} style={{ marginVertical: 10 }} />
+          ) : (
+            <Text style={styles.balanceValue}>₦{Number(balance).toLocaleString()}</Text>
+          )}
+          <View style={styles.balanceActions}>
+            <TouchableOpacity style={styles.fundBtn} onPress={() => navigation.navigate('FundWallet')}>
+              <Ionicons name="add" size={16} color="#FFF" />
+              <Text style={styles.fundBtnText}>Fund Wallet</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={[styles.heroBtn, styles.secondaryHeroBtn]}>
-              <Ionicons name="paper-plane" size={20} color={COLORS.primary} />
-              <Text style={[styles.heroBtnText, { color: COLORS.primary }]}>Withdraw</Text>
+            <TouchableOpacity style={styles.withdrawBtn}>
+              <Text style={styles.withdrawBtnText}>Withdraw</Text>
             </TouchableOpacity>
           </View>
         </View>
 
-        {/* Quick Actions Grid */}
-        <View style={styles.quickActions}>
-          <TouchableOpacity style={styles.actionCard} onPress={() => navigation.navigate('Ambassador')}>
-            <View style={[styles.actionIcon, { backgroundColor: '#E0D4FC' }]}>
-              <Ionicons name="star" size={24} color={COLORS.primary} />
-            </View>
-            <Text style={styles.actionText}>Ambassador Earnings</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.actionCard} onPress={() => navigation.navigate('TransactionHistory')}>
-            <View style={[styles.actionIcon, { backgroundColor: '#D4FCEF' }]}>
-              <Ionicons name="receipt" size={24} color={COLORS.accent} />
-            </View>
-            <Text style={styles.actionText}>Full History</Text>
+        {/* Transactions */}
+        <View style={styles.txHeader}>
+          <Text style={styles.txTitle}>Recent Transactions</Text>
+          <TouchableOpacity onPress={() => navigation.navigate('Transactions')}>
+            <Text style={styles.seeAll}>See all</Text>
           </TouchableOpacity>
         </View>
 
-        {/* Recent Transactions */}
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Recent Activity</Text>
-          <TouchableOpacity onPress={() => navigation.navigate('TransactionHistory')}>
-            <Text style={styles.seeAllText}>See all</Text>
-          </TouchableOpacity>
-        </View>
-
-        {transactions.length === 0 ? (
-          <View style={styles.emptyState}>
-            <Ionicons name="wallet-outline" size={48} color={COLORS.textLight} />
-            <Text style={styles.emptyText}>No transactions yet. Add funds to get started!</Text>
+        {transactions.length === 0 && !loading ? (
+          <View style={styles.empty}>
+            <View style={styles.emptyIcon}>
+              <Ionicons name="wallet-outline" size={32} color={COLORS.navy} />
+            </View>
+            <Text style={styles.emptyTitle}>No transactions yet</Text>
+            <Text style={styles.emptySub}>Fund your wallet to start shopping.</Text>
           </View>
         ) : (
-          transactions.map((txn) => (
-            <View key={txn._id} style={styles.txnCard}>
-              <View style={[styles.txnIcon, { backgroundColor: txn.type === 'credit' ? '#D4FCEF' : '#FFE5E5' }]}>
-                <Ionicons 
-                  name={txn.type === 'credit' ? 'arrow-down' : 'arrow-up'} 
-                  size={20} 
-                  color={txn.type === 'credit' ? COLORS.accent : COLORS.error} 
-                />
+          transactions.map((t, i) => {
+            const isCredit = CREDIT_TYPES.includes(t.type);
+            return (
+              <View key={t._id || i} style={styles.txRow}>
+                <View style={[styles.txIcon, { backgroundColor: isCredit ? COLORS.successSoft : COLORS.orangeSoft }]}>
+                  <Ionicons name={isCredit ? 'arrow-down' : 'arrow-up'} size={16} color={isCredit ? COLORS.success : COLORS.orange} />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.txTitleText} numberOfLines={1}>{t.description || (isCredit ? 'Wallet top-up' : 'Payment')}</Text>
+                  <Text style={styles.txDate}>{t.createdAt ? new Date(t.createdAt).toLocaleDateString() : ''}</Text>
+                </View>
+                <Text style={[styles.txAmount, { color: isCredit ? COLORS.success : COLORS.navy }]}>
+                  {isCredit ? '+' : '-'}₦{Number(t.amount || 0).toLocaleString()}
+                </Text>
               </View>
-              <View style={styles.txnDetails}>
-                <Text style={styles.txnTitle}>{txn.description}</Text>
-                <Text style={styles.txnDate}>{new Date(txn.createdAt).toLocaleDateString()}</Text>
-              </View>
-              <Text style={[styles.txnAmount, { color: txn.type === 'credit' ? COLORS.accent : COLORS.textDark }]}>
-                {txn.type === 'credit' ? '+' : '-'}{formatCurrency(txn.amount)}
-              </Text>
-            </View>
-          ))
+            );
+          })
         )}
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: COLORS.background },
-  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, paddingVertical: 15 },
-  backBtn: { width: 40, height: 40, borderRadius: 20, backgroundColor: '#FFF', justifyContent: 'center', alignItems: 'center', shadowColor: '#000', shadowOpacity: 0.05, elevation: 2 },
-  headerTitle: { fontSize: 20, fontWeight: '800', color: COLORS.textDark },
-  heroCard: { backgroundColor: COLORS.primary, margin: 20, padding: 24, borderRadius: 30, shadowColor: COLORS.primary, shadowOpacity: 0.2, shadowRadius: 15, elevation: 5 },
-  heroLabel: { color: 'rgba(255,255,255,0.8)', fontSize: 14, fontWeight: '600' },
-  heroBalance: { color: '#FFF', fontSize: 42, fontWeight: '900', marginVertical: 10, letterSpacing: -1 },
-  heroSub: { color: 'rgba(255,255,255,0.7)', fontSize: 13, marginBottom: 24 },
-  heroActions: { flexDirection: 'row', gap: 12 },
-  heroBtn: { flex: 1, flexDirection: 'row', backgroundColor: COLORS.accent, paddingVertical: 14, borderRadius: 16, justifyContent: 'center', alignItems: 'center' },
-  secondaryHeroBtn: { backgroundColor: '#FFF' },
-  heroBtnText: { color: '#FFF', fontWeight: 'bold', fontSize: 15, marginLeft: 8 },
-  quickActions: { flexDirection: 'row', paddingHorizontal: 20, marginBottom: 30 },
-  actionCard: { flex: 1, backgroundColor: '#FFF', padding: 16, borderRadius: 20, marginHorizontal: 5, alignItems: 'center', shadowColor: '#000', shadowOpacity: 0.05, elevation: 2 },
-  actionIcon: { width: 50, height: 50, borderRadius: 15, justifyContent: 'center', alignItems: 'center', marginBottom: 10 },
-  actionText: { fontSize: 13, fontWeight: '700', color: COLORS.textDark, textAlign: 'center' },
-  sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, marginBottom: 15 },
-  sectionTitle: { fontSize: 18, fontWeight: '800', color: COLORS.textDark },
-  seeAllText: { color: COLORS.primary, fontWeight: '600' },
-  emptyState: { alignItems: 'center', padding: 40 },
-  emptyText: { color: COLORS.textLight, marginTop: 10, textAlign: 'center' },
-  txnCard: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFF', marginHorizontal: 20, marginBottom: 12, padding: 16, borderRadius: 20, shadowColor: '#000', shadowOpacity: 0.03, elevation: 2 },
-  txnIcon: { width: 44, height: 44, borderRadius: 14, justifyContent: 'center', alignItems: 'center', marginRight: 14 },
-  txnDetails: { flex: 1 },
-  txnTitle: { fontSize: 15, fontWeight: '700', color: COLORS.textDark, marginBottom: 4 },
-  txnDate: { fontSize: 12, color: COLORS.textLight },
-  txnAmount: { fontSize: 16, fontWeight: '800' },
+  balanceCard: { marginHorizontal: 20, borderRadius: 20, padding: 22, backgroundColor: COLORS.navy, ...SHADOW.card },
+  balanceLabel: { fontSize: 13, fontWeight: '600', color: 'rgba(255,255,255,0.7)', marginBottom: 6 },
+  balanceValue: { fontSize: 34, fontWeight: '900', color: '#FFF', marginBottom: 18 },
+  balanceActions: { flexDirection: 'row' },
+  fundBtn: { flexDirection: 'row', alignItems: 'center', backgroundColor: COLORS.orange, borderRadius: 12, paddingHorizontal: 18, paddingVertical: 12, marginRight: 10 },
+  fundBtnText: { color: '#FFF', fontWeight: '700', fontSize: 14, marginLeft: 6 },
+  withdrawBtn: { borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.5)', borderRadius: 12, paddingHorizontal: 18, paddingVertical: 12 },
+  withdrawBtnText: { color: '#FFF', fontWeight: '700', fontSize: 14 },
+  txHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, marginTop: 26, marginBottom: 12 },
+  txTitle: { fontSize: 17, fontWeight: '800', color: COLORS.navy },
+  seeAll: { color: COLORS.gold, fontWeight: '700', fontSize: 13 },
+  empty: { alignItems: 'center', paddingTop: 30 },
+  emptyIcon: { width: 72, height: 72, borderRadius: 36, backgroundColor: COLORS.surface, borderWidth: 1, borderColor: COLORS.borderLight, justifyContent: 'center', alignItems: 'center', marginBottom: 14 },
+  emptyTitle: { fontSize: 16, fontWeight: '800', color: COLORS.navy },
+  emptySub: { fontSize: 13, color: COLORS.textLight, marginTop: 4 },
+  txRow: { ...CARD, flexDirection: 'row', alignItems: 'center', marginHorizontal: 20, marginBottom: 12, padding: 14 },
+  txIcon: { width: 38, height: 38, borderRadius: 10, justifyContent: 'center', alignItems: 'center', marginRight: 12 },
+  txTitleText: { fontSize: 14, fontWeight: '700', color: COLORS.navy },
+  txDate: { fontSize: 12, color: COLORS.textLight, marginTop: 2 },
+  txAmount: { fontSize: 14, fontWeight: '800' },
 });
 
 export default WalletScreen;
