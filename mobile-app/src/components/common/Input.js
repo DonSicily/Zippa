@@ -1,37 +1,41 @@
-import React from 'react';
-import { View, TextInput, StyleSheet } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { COLORS, RADIUS } from '../../utils/colors';
+import React, { useState, useCallback } from 'react';
+import { StatusBar } from 'expo-status-bar';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
-// v2 Input — white field, hairline border, 12px radius, muted left icon
-const Input = ({ icon, placeholder, value, onChangeText, secure = false, keyboard = 'default', rightSlot, style }) => (
-  <View style={[styles.wrap, style]}>
-    {icon ? <Ionicons name={icon} size={20} color={COLORS.textMuted} style={styles.icon} /> : null}
-    <TextInput
-      style={styles.input}
-      placeholder={placeholder}
-      placeholderTextColor={COLORS.textMuted}
-      value={value}
-      onChangeText={onChangeText}
-      secureTextEntry={secure}
-      keyboardType={keyboard}
-      autoCapitalize="none"
-    />
-    {rightSlot}
-  </View>
-);
+import ErrorBoundary from './src/components/common/ErrorBoundary';
+import CustomSplashScreen from './src/components/common/CustomSplashScreen';
+import OfflineBanner from './src/components/common/OfflineBanner';
+import { AuthProvider } from './src/context/AuthContext';
+import { CartProvider } from './src/context/CartContext';
+import AppNavigator from './src/navigation/AppNavigator';
+import { COLORS } from './src/utils/colors';
 
-const styles = StyleSheet.create({
-  wrap: {
-    flexDirection: 'row', alignItems: 'center',
-    backgroundColor: COLORS.surface,
-    borderWidth: 1, borderColor: COLORS.border,
-    borderRadius: RADIUS.md,
-    height: 54, paddingHorizontal: 14,
-    marginBottom: 14,
-  },
-  icon: { marginRight: 10 },
-  input: { flex: 1, fontSize: 15, fontWeight: '600', color: COLORS.textDark },
-});
+export default function App() {
+  const [showSplash, setShowSplash] = useState(true);
+  const handleSplashFinish = useCallback(() => setShowSplash(false), []);
 
-export default Input;
+  if (showSplash) {
+    return (
+      <ErrorBoundary>
+        <CustomSplashScreen onFinish={handleSplashFinish} />
+      </ErrorBoundary>
+    );
+  }
+
+  return (
+    <ErrorBoundary>
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <SafeAreaProvider>
+          <AuthProvider>
+            <CartProvider>
+              <StatusBar style="dark" backgroundColor={COLORS.background} />
+              <OfflineBanner />
+              <AppNavigator />
+            </CartProvider>
+          </AuthProvider>
+        </SafeAreaProvider>
+      </GestureHandlerRootView>
+    </ErrorBoundary>
+  );
+}
