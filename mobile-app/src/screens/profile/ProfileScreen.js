@@ -7,8 +7,10 @@ import { COLORS, CARD } from '../../utils/colors';
 
 const MENU_ITEMS = [
   { id: 'Orders', title: 'My Orders', icon: 'bag-handle-outline', bg: COLORS.goldSoft, fg: COLORS.navy },
+  { id: 'Wallet', title: 'Campus Wallet', icon: 'wallet-outline', bg: COLORS.orangeSoft, fg: COLORS.orange }, // 🆕 Added Wallet
   { id: 'Addresses', title: 'Delivery Addresses', icon: 'location-outline', bg: COLORS.successSoft, fg: COLORS.success },
-  { id: 'Ambassador', title: 'Campus Ambassador', icon: 'star-outline', bg: COLORS.orangeSoft, fg: COLORS.orange },
+  { id: 'Ambassador', title: 'Campus Ambassador', icon: 'star-outline', bg: COLORS.goldSoft, fg: COLORS.gold },
+  { id: 'CampusSelector', title: 'Change Campus', icon: 'school-outline', bg: COLORS.chipBg, fg: COLORS.navy },
   { id: 'Settings', title: 'Settings', icon: 'settings-outline', bg: COLORS.chipBg, fg: COLORS.textLight },
 ];
 
@@ -17,7 +19,7 @@ const ProfileScreen = () => {
   const navigation = useNavigation();
 
   const handleLogout = () => {
-    Alert.alert('Logout', 'Are you sure you want to log out?', [
+    Alert.alert('Log Out', 'Are you sure you want to log out?', [
       { text: 'Cancel', style: 'cancel' },
       { text: 'Yes, log out', onPress: logout, style: 'destructive' },
     ]);
@@ -26,6 +28,7 @@ const ProfileScreen = () => {
   return (
     <View style={styles.container}>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 120 }}>
+        {/* Profile Header */}
         <View style={styles.header}>
           <Image source={{ uri: user?.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200' }} style={styles.avatar} />
           <Text style={styles.name}>{user?.firstName || 'Bestie'} {user?.lastName || 'User'}</Text>
@@ -36,6 +39,7 @@ const ProfileScreen = () => {
           </TouchableOpacity>
         </View>
 
+        {/* Menu Items */}
         <View style={styles.menuContainer}>
           {MENU_ITEMS.map((item) => (
             <TouchableOpacity key={item.id} style={styles.menuItem} onPress={() => navigation.navigate(item.id)}>
@@ -46,11 +50,24 @@ const ProfileScreen = () => {
               <Ionicons name="chevron-forward" size={18} color={COLORS.textMuted} />
             </TouchableOpacity>
           ))}
+          
+          {/* Logout */}
           <TouchableOpacity style={styles.menuItem} onPress={handleLogout}>
             <View style={[styles.iconBox, { backgroundColor: COLORS.errorSoft }]}>
               <Ionicons name="log-out-outline" size={20} color={COLORS.error} />
             </View>
             <Text style={[styles.menuText, { color: COLORS.error }]}>Log Out</Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Legal Links */}
+        <View style={styles.legalLinks}>
+          <TouchableOpacity onPress={() => navigation.navigate('About')}>
+            <Text style={styles.legalText}>About Bestiez</Text>
+          </TouchableOpacity>
+          <View style={styles.dot} />
+          <TouchableOpacity onPress={() => navigation.navigate('Terms')}>
+            <Text style={styles.legalText}>Terms & Privacy</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -70,6 +87,9 @@ const styles = StyleSheet.create({
   menuItem: { ...CARD, flexDirection: 'row', alignItems: 'center', padding: 16, marginBottom: 12 },
   iconBox: { width: 40, height: 40, borderRadius: 10, justifyContent: 'center', alignItems: 'center', marginRight: 14 },
   menuText: { flex: 1, fontSize: 15, fontWeight: '700', color: COLORS.navy },
+  legalLinks: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginTop: 24 },
+  legalText: { fontSize: 13, fontWeight: '600', color: COLORS.textLight },
+  dot: { width: 4, height: 4, borderRadius: 2, backgroundColor: COLORS.textMuted, marginHorizontal: 12 },
 });
 
 export default ProfileScreen;
