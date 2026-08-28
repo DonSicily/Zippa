@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Login from './components/Login';
 import Dashboard from './components/Dashboard';
 import ProductList from './components/ProductList';
@@ -12,22 +12,40 @@ import { useVendorStore } from './store/vendorStore';
 import { useVendorAuth } from './hooks/useVendorAuth';
 import { COLORS } from './utils/colors';
 
+const useMediaQuery = (query) => {
+  const [matches, setMatches] = useState(window.matchMedia(query).matches);
+  useEffect(() => {
+    const media = window.matchMedia(query);
+    const listener = () => setMatches(media.matches);
+    media.addEventListener('change', listener);
+    return () => media.removeEventListener('change', listener);
+  }, [query]);
+  return matches;
+};
+
 const App = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [showProductForm, setShowProductForm] = useState(false);
+  const [editingProduct, setEditingProduct] = useState(null);
+  
   const { isAuthenticated, vendor, isSidebarCollapsed, toggleSidebar } = useVendorStore();
   const { handleLogout } = useVendorAuth();
+  const isMobile = useMediaQuery('(max-width: 768px)');
 
   if (!isAuthenticated) return <Login />;
 
   const companyName = vendor?.companyName || 'Vendor Partner';
   const initial = companyName.charAt(0).toUpperCase();
 
+  const handleCloseForm = () => { setShowProductForm(false); setEditingProduct(null); };
+  const handleAddNew = () => { setEditingProduct(null); setShowProductForm(true); };
+  const handleEdit = (product) => { setEditingProduct(product); setShowProductForm(true); };
+
   const renderContent = () => {
-    if (showProductForm) return <ProductForm onClose={() => setShowProductForm(false)} />;
+    if (showProductForm) return <ProductForm onClose={handleCloseForm} editData={editingProduct} />;
     switch (activeTab) {
       case 'dashboard': return <Dashboard />;
-      case 'products': return <ProductList onAddNew={() => setShowProductForm(true)} />;
+      case 'products': return <ProductList onAddNew={handleAddNew} onEdit={handleEdit} />;
       case 'orders': return <OrderManager />;
       case 'payouts': return <Payouts />;
       case 'analytics': return <Analytics />;
@@ -46,7 +64,7 @@ const App = () => {
     return (
       <div
         title={label}
-        onClick={() => { setActiveTab(id); setShowProductForm(false); }}
+        onClick={() => { setActiveTab(id); handleCloseForm(); }}
         style={{
           padding: '12px 14px', cursor: 'pointer', borderRadius: '10px', marginBottom: '4px',
           backgroundColor: isActive ? 'rgba(255,255,255,0.08)' : 'transparent',
@@ -64,69 +82,104 @@ const App = () => {
     );
   };
 
+  // Mobile Bottom Navigation
+  const BottomNav = () => (
+    <div style={{
+      position: 'fixed', bottom: 0, left: 0, right: 0, height: '70px',
+      backgroundColor: COLORS.white, borderTop: `1px solid ${COLORS.border}`,
+      display: 'flex', justifyContent: 'space-around', alignItems: 'center',
+      zIndex: 1000, paddingBottom: 'env(safe-area-inset-bottom)',
+      boxShadow: '0 -4px 12px rgba(0,0,0,0.03)'
+    }}>
+      {[
+        { id: 'dashboard', label: 'Home', icon: '🏠' },
+        { id: 'products', label: 'Products', icon: '📦' },
+        { id: 'orders', label: 'Orders', icon: '🧾' },
+        { id: 'payouts', label: 'Payouts', icon: '💰' },
+        { id: 'profile', label: 'Profile', icon: '👤' },
+      ].map(item => (
+        <div key={item.id} onClick={() => { setActiveTab(item.id); handleCloseForm(); }} style={{
+          display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px',
+          color: activeTab === item.id ? COLORS.coral : COLORS.textMuted,
+          fontSize: '11px', fontWeight: activeTab === item.id ? '700' : '500', cursor: 'pointer'
+        }}>
+          <span style={{ fontSize: '20px' }}>{item.icon}</span>
+          {item.label}
+        </div>
+      ))}
+    </div>
+  );
+
   return (
     <div style={{ display: 'flex', height: '100vh', fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif", backgroundColor: COLORS.cream }}>
-      {/* Sidebar */}
-      <div style={{
-        width: isSidebarCollapsed ? 82 : 260, transition: 'width 0.2s ease',
-        backgroundColor: COLORS.navy, padding: '24px 14px',
-        display: 'flex', flexDirection: 'column', flexShrink: 0, overflow: 'hidden',
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '36px', paddingLeft: '10px' }}>
-          <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: `linear-gradient(135deg, ${COLORS.coral}, ${COLORS.gold})`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: '800', fontSize: '16px', flexShrink: 0 }}>
-            {initial}
-          </div>
-          {!isSidebarCollapsed && <h2 style={{ color: COLORS.white, margin: 0, fontSize: '18px', fontWeight: '700', letterSpacing: '-0.5px', whiteSpace: 'nowrap' }}>Bestiez Vendor</h2>}
-        </div>
-
-        <SectionLabel>Main Menu</SectionLabel>
-        <NavItem id="dashboard" label="Dashboard" icon="📊" />
-        <NavItem id="analytics" label="Analytics" icon="📈" />
-        <NavItem id="products" label="My Products" icon="📦" />
-        <NavItem id="orders" label="Orders" icon="🧾" />
-        <NavItem id="payouts" label="Payouts" icon="💰" />
-
-        <div style={{ height: '20px' }} />
-        <SectionLabel>Account</SectionLabel>
-        <NavItem id="profile" label="Company Profile" icon="🏢" />
-        <NavItem id="support" label="Help & Support" icon="🎧" />
-
-        <div style={{ marginTop: 'auto', paddingTop: '16px', borderTop: '1px solid rgba(255,255,255,0.08)' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', paddingLeft: '10px', justifyContent: isSidebarCollapsed ? 'center' : 'flex-start' }}>
-            <div style={{ width: '36px', height: '36px', borderRadius: '50%', backgroundColor: COLORS.gold, display: 'flex', alignItems: 'center', justifyContent: 'center', color: COLORS.navy, fontWeight: '700', fontSize: '14px', flexShrink: 0 }}>
+      {/* Desktop Sidebar */}
+      {!isMobile && (
+        <div style={{
+          width: isSidebarCollapsed ? 82 : 260, transition: 'width 0.2s ease',
+          backgroundColor: COLORS.navy, padding: '24px 14px',
+          display: 'flex', flexDirection: 'column', flexShrink: 0, overflow: 'hidden',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '36px', paddingLeft: '10px' }}>
+            <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: `linear-gradient(135deg, ${COLORS.coral}, ${COLORS.gold})`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: '800', fontSize: '16px', flexShrink: 0 }}>
               {initial}
             </div>
-            {!isSidebarCollapsed && (
-              <div style={{ overflow: 'hidden' }}>
-                <div style={{ color: COLORS.white, fontSize: '13px', fontWeight: '600', whiteSpace: 'nowrap' }}>{companyName}</div>
-                <div onClick={handleLogout} style={{ color: 'rgba(255,255,255,0.5)', fontSize: '12px', cursor: 'pointer', marginTop: '2px' }}>Log Out</div>
-              </div>
-            )}
+            {!isSidebarCollapsed && <h2 style={{ color: COLORS.white, margin: 0, fontSize: '18px', fontWeight: '700', letterSpacing: '-0.5px', whiteSpace: 'nowrap' }}>Bestiez Vendor</h2>}
+          </div>
+
+          <SectionLabel>Main Menu</SectionLabel>
+          <NavItem id="dashboard" label="Dashboard" icon="📊" />
+          <NavItem id="analytics" label="Analytics" icon="📈" />
+          <NavItem id="products" label="My Products" icon="📦" />
+          <NavItem id="orders" label="Orders" icon="🧾" />
+          <NavItem id="payouts" label="Payouts" icon="💰" />
+
+          <div style={{ height: '20px' }} />
+          <SectionLabel>Account</SectionLabel>
+          <NavItem id="profile" label="Company Profile" icon="🏢" />
+          <NavItem id="support" label="Help & Support" icon="🎧" />
+
+          <div style={{ marginTop: 'auto', paddingTop: '16px', borderTop: '1px solid rgba(255,255,255,0.08)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', paddingLeft: '10px', justifyContent: isSidebarCollapsed ? 'center' : 'flex-start' }}>
+              <div style={{ width: '36px', height: '36px', borderRadius: '50%', backgroundColor: COLORS.gold, display: 'flex', alignItems: 'center', justifyContent: 'center', color: COLORS.navy, fontWeight: '700', fontSize: '14px', flexShrink: 0 }}>{initial}</div>
+              {!isSidebarCollapsed && (
+                <div style={{ overflow: 'hidden' }}>
+                  <div style={{ color: COLORS.white, fontSize: '13px', fontWeight: '600', whiteSpace: 'nowrap' }}>{companyName}</div>
+                  <div onClick={handleLogout} style={{ color: 'rgba(255,255,255,0.5)', fontSize: '12px', cursor: 'pointer', marginTop: '2px' }}>Log Out</div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
-      {/* Main */}
+      {/* Main Content Area */}
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-        <div style={{ height: '72px', backgroundColor: COLORS.white, borderBottom: `1px solid ${COLORS.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 32px', flexShrink: 0 }}>
+        {/* Top Header */}
+        <div style={{ height: '72px', backgroundColor: COLORS.white, borderBottom: `1px solid ${COLORS.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 24px', flexShrink: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-            <button onClick={toggleSidebar} style={{ width: '36px', height: '36px', borderRadius: '10px', border: `1px solid ${COLORS.border}`, backgroundColor: COLORS.white, cursor: 'pointer', fontSize: '14px', color: COLORS.textSecondary }}>
-              {isSidebarCollapsed ? '»' : '«'}
-            </button>
+            {!isMobile && (
+              <button onClick={toggleSidebar} style={{ width: '36px', height: '36px', borderRadius: '10px', border: `1px solid ${COLORS.border}`, backgroundColor: COLORS.white, cursor: 'pointer', fontSize: '14px', color: COLORS.textSecondary }}>
+                {isSidebarCollapsed ? '»' : '«'}
+              </button>
+            )}
             <div style={{ fontSize: '14px', color: COLORS.textSecondary }}>
               Welcome back, <span style={{ color: COLORS.textPrimary, fontWeight: 600 }}>{vendor?.contactPerson?.split(' ')[0] || 'Partner'}</span>
             </div>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-            <div style={{ padding: '8px 16px', backgroundColor: COLORS.cream, borderRadius: '20px', fontSize: '13px', color: COLORS.textPrimary, cursor: 'pointer' }}>🔔 Notifications</div>
+            <div style={{ padding: '8px 16px', backgroundColor: COLORS.cream, borderRadius: '20px', fontSize: '13px', color: COLORS.textPrimary, cursor: 'pointer' }}>🔔</div>
             <div style={{ width: '40px', height: '40px', borderRadius: '50%', backgroundColor: COLORS.cream, border: `1px solid ${COLORS.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: COLORS.navy, fontWeight: '700' }}>{initial}</div>
           </div>
         </div>
 
-        <div style={{ flex: 1, padding: '32px', overflowY: 'auto' }}>
+        {/* Page Content */}
+        <div style={{ flex: 1, padding: isMobile ? '20px 16px 90px 16px' : '32px', overflowY: 'auto' }}>
           {renderContent()}
         </div>
       </div>
+
+      {/* Mobile Bottom Nav */}
+      {isMobile && <BottomNav />}
     </div>
   );
 };
