@@ -1,74 +1,94 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { Eye, CheckCircle, Ban, MapPin, Factory } from 'lucide-react';
+import { getAllVendors, approveVendor } from '../services/adminService';
+import { COLORS, SHADOWS } from '../utils/colors';
 
-const COLORS = { primary: '#004E89', accent: '#FF6B35', white: '#FFFFFF', textDark: '#0F172A', textLight: '#64748B', success: '#10B981', danger: '#EF4444' };
+const SEED_VENDORS = [
+  { _id: 'V-01', name: 'vendorX', contact: 'vendorx@163.com', loc: 'Guangzhou, CN', products: 0, gmv: '$0', status: 'Pending', joined: 'Aug 27, 2026' },
+  { _id: 'V-02', name: 'Shenzhen Tech Co.', contact: 'sales@sztech.cn', loc: 'Shenzhen, CN', products: 14, gmv: '$86,200', status: 'Active', joined: 'Jan 12, 2026' },
+  { _id: 'V-03', name: 'Guangzhou Fashion', contact: 'hello@gzfashion.cn', loc: 'Guangzhou, CN', products: 9, gmv: '$54,750', status: 'Active', joined: 'Feb 03, 2026' },
+  { _id: 'V-04', name: 'Yiwu Home Goods', contact: 'ops@yiwuhome.cn', loc: 'Yiwu, CN', products: 11, gmv: '$38,900', status: 'Active', joined: 'Mar 18, 2026' },
+  { _id: 'V-05', name: 'Dongguan Bags Ltd', contact: 'info@dgbags.cn', loc: 'Dongguan, CN', products: 6, gmv: '$21,400', status: 'Suspended', joined: 'Apr 22, 2026' },
+];
+
+const statusStyle = (s) => ({
+  Active: { bg: COLORS.successBg, color: COLORS.success },
+  Pending: { bg: COLORS.warningBg, color: '#92400E' },
+  Suspended: { bg: COLORS.dangerBg, color: COLORS.danger },
+}[s] || { bg: COLORS.borderLight, color: COLORS.textMuted });
 
 const VendorManager = () => {
-  const vendors = [
-    { id: 'V-01', name: 'Shenzhen Tech Co.', location: 'Shenzhen', orders: 1240, rating: 4.8, status: 'Approved' },
-    { id: 'V-02', name: 'Guangzhou Fashion', location: 'Guangzhou', orders: 850, rating: 4.5, status: 'Approved' },
-    { id: 'V-03', name: 'Yiwu Home Goods', location: 'Yiwu', orders: 120, rating: 3.9, status: 'Suspended' },
-    { id: 'V-04', name: 'Dongguan Bags Ltd', location: 'Guangzhou', orders: 0, rating: 0, status: 'Pending' },
+  const [vendors, setVendors] = useState(SEED_VENDORS);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    setLoading(true);
+    getAllVendors()
+      .then((res) => {
+        const data = Array.isArray(res) ? res : res?.vendors;
+        if (Array.isArray(data) && data.length) setVendors(data);
+        setLoading(false);
+      })
+      .catch(() => setLoading(false)); // Seed remains as fallback
+  }, []);
+
+  const handleApprove = async (id) => {
+    try { await approveVendor(id); } catch (e) { /* demo mode */ }
+    setVendors((v) => v.map((x) => (x._id === id ? { ...x, status: 'Active' } : x)));
+  };
+
+  const handleSuspend = (id) => {
+    setVendors((v) => v.map((x) => (x._id === id ? { ...x, status: x.status === 'Suspended' ? 'Active' : 'Suspended' } : x)));
+  };
+
+  const pills = [
+    { label: 'Total Vendors', value: vendors.length, dot: COLORS.info },
+    { label: 'Pending Approval', value: vendors.filter((v) => v.status === 'Pending').length, dot: COLORS.warning },
+    { label: 'Suspended', value: vendors.filter((v) => v.status === 'Suspended').length, dot: COLORS.danger },
   ];
 
+  const cell = { padding: '16px', fontSize: '14px', color: COLORS.textMain };
+
   return (
-    <div>
-      <div style={{ marginBottom: '24px' }}>
-        <h1 style={{ color: COLORS.textDark, margin: 0, fontSize: '24px' }}>Vendor Management 🏭</h1>
-        <p style={{ color: COLORS.textLight, margin: '4px 0 0 0', fontSize: '14px' }}>Manage factory partnerships, performance, and payouts.</p>
+    <div style={{ opacity: loading ? 0.7 : 1 }}>
+      <div style={{ marginBottom: '20px' }}>
+        <h1 style={{ color: COLORS.navy, margin: 0, fontSize: '24px', fontWeight: '700' }}>Vendor Management</h1>
+        <p style={{ color: COLORS.textMuted, margin: '4px 0 0 0', fontSize: '14px' }}>Onboard, approve, and supervise marketplace vendors.</p>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px', marginBottom: '24px' }}>
-        {[
-          { label: 'Total Vendors', value: '24', color: COLORS.primary },
-          { label: 'Approved', value: '18', color: COLORS.success },
-          { label: 'Pending Approval', value: '4', color: '#F59E0B' },
-          { label: 'Suspended', value: '2', color: COLORS.danger },
-        ].map((stat, idx) => (
-          <div key={idx} style={{ backgroundColor: COLORS.white, padding: '20px', borderRadius: '12px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
-            <div style={{ color: COLORS.textLight, fontSize: '13px', marginBottom: '8px' }}>{stat.label}</div>
-            <div style={{ color: stat.color, fontSize: '28px', fontWeight: '700' }}>{stat.value}</div>
-          </div>
+      <div style={{ display: 'flex', gap: '12px', marginBottom: '20px' }}>
+        {pills.map((p, i) => (
+          <span key={i} style={{ backgroundColor: COLORS.white, border: `1px solid ${COLORS.border}`, padding: '8px 14px', borderRadius: '8px', fontSize: '13px', fontWeight: '600', color: COLORS.textMain, display: 'flex', alignItems: 'center', gap: '8px', boxShadow: SHADOWS.card }}>
+            <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: p.dot }} />
+            {p.label}
+            <span style={{ backgroundColor: COLORS.cream, padding: '2px 8px', borderRadius: '10px', fontSize: '12px', fontWeight: '700' }}>{p.value}</span>
+          </span>
         ))}
       </div>
 
-      <div style={{ backgroundColor: COLORS.white, borderRadius: '12px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', overflow: 'hidden' }}>
+      <div style={{ backgroundColor: COLORS.white, borderRadius: '12px', boxShadow: SHADOWS.card, overflow: 'hidden' }}>
         <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
           <thead>
-            <tr style={{ backgroundColor: '#F8FAFC', borderBottom: '1px solid #E2E8F0' }}>
-              <th style={{ padding: '16px', color: COLORS.textLight, fontSize: '12px', fontWeight: '600' }}>VENDOR</th>
-              <th style={{ padding: '16px', color: COLORS.textLight, fontSize: '12px', fontWeight: '600' }}>LOCATION</th>
-              <th style={{ padding: '16px', color: COLORS.textLight, fontSize: '12px', fontWeight: '600' }}>TOTAL ORDERS</th>
-              <th style={{ padding: '16px', color: COLORS.textLight, fontSize: '12px', fontWeight: '600' }}>RATING</th>
-              <th style={{ padding: '16px', color: COLORS.textLight, fontSize: '12px', fontWeight: '600' }}>STATUS</th>
-              <th style={{ padding: '16px', color: COLORS.textLight, fontSize: '12px', fontWeight: '600', textAlign: 'right' }}>ACTIONS</th>
+            <tr style={{ backgroundColor: '#F8FAFC', borderBottom: `1px solid ${COLORS.border}` }}>
+              {['Vendor', 'Location', 'Products', 'GMV', 'Status', 'Joined', 'Actions'].map((h) => (
+                <th key={h} style={{ padding: '16px', color: COLORS.textMuted, fontSize: '12px', fontWeight: '600', textTransform: 'uppercase' }}>{h}</th>
+              ))}
             </tr>
           </thead>
           <tbody>
-            {vendors.map((v) => (
-              <tr key={v.id} style={{ borderBottom: '1px solid #F1F5F9' }}>
-                <td style={{ padding: '16px', fontWeight: '600', color: COLORS.textDark }}>{v.name}</td>
-                <td style={{ padding: '16px', color: COLORS.textLight }}>{v.location}</td>
-                <td style={{ padding: '16px', color: COLORS.textDark }}>{v.orders}</td>
-                <td style={{ padding: '16px', color: COLORS.textDark }}>{v.rating > 0 ? `⭐ ${v.rating}` : '-'}</td>
-                <td style={{ padding: '16px' }}>
-                  <span style={{ 
-                    padding: '4px 10px', borderRadius: '12px', fontSize: '12px', fontWeight: '600',
-                    backgroundColor: v.status === 'Approved' ? '#D1FAE5' : v.status === 'Pending' ? '#FEF3C7' : '#FEE2E2',
-                    color: v.status === 'Approved' ? '#065F46' : v.status === 'Pending' ? '#92400E' : '#991B1B'
-                  }}>
-                    {v.status}
-                  </span>
-                </td>
-                <td style={{ padding: '16px', textAlign: 'right' }}>
-                  <button style={{ color: COLORS.primary, background: 'none', border: 'none', cursor: 'pointer', fontWeight: '600', fontSize: '13px' }}>View Details</button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  );
-};
-
-export default VendorManager;
+            {vendors.map((v) => {
+              const st = statusStyle(v.status);
+              return (
+                <tr key={v._id} style={{ borderBottom: `1px solid ${COLORS.borderLight}` }}>
+                  <td style={cell}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                      <div style={{ width: '40px', height: '40px', backgroundColor: COLORS.borderLight, borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                        <Factory size={18} color={COLORS.textMuted} />
+                      </div>
+                      <div>
+                        <div style={{ fontWeight: '600', color: COLORS.textMain }}>{v.name}</div>
+                        <div style={{ color: COLORS.textMuted, fontSize: '12px' }}>{v.contact}</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td style={cell}><span style={{ display: '
