@@ -1,34 +1,32 @@
-// Centralized color palette for the Vendor Portal.
-// Designed to be clean, professional, and trustworthy for B2B interactions.
-
+// Centralized color palette for the Vendor Portal (Redesigned).
 export const COLORS = {
-  primary: '#004E89',     // Navy Blue (Trust, Professionalism)
-  primaryDark: '#003366',
-  primaryLight: '#0066B2',
+  // Core Brand
+  navy: '#12263F',      // Ink navy - Sidebar, headings, primary text
+  coral: '#F1602E',     // Coral orange - Primary CTAs, FABs, highlights
+  gold: '#C9A24B',      // Brass gold - Accents, active states, borders, positive indicators
+  cream: '#F4F0E8',     // Cream canvas - App background
+  white: '#FFFFFF',     // Pure white - Cards, surfaces
+  card: '#FBFBFA',      // Slightly off-white for card backgrounds if needed
   
-  accent: '#FF6B35',      // Orange (Action, Alerts)
-  accentDark: '#E55A2B',
+  // Text
+  textPrimary: '#12263F',   // Ink navy
+  textSecondary: '#8A8F98', // Slate gray
+  textMuted: '#B0B5B9',     // Lighter slate
   
-  background: '#F4F6F8',  // Light Gray (Easy on the eyes for data tables)
-  surface: '#FFFFFF',     // White (Cards, Modals)
-  
-  textDark: '#1A202C',    // Dark Slate (Primary Text)
-  textLight: '#718096',   // Medium Slate (Secondary Text, Labels)
-  textMuted: '#A0AEC0',   // Light Slate (Placeholders)
-  
-  border: '#E2E8F0',      // Light Gray (Table borders, dividers)
-  
-  success: '#38A169',     // Green (Completed orders, positive revenue)
-  successLight: '#C6F6D5',
-  
-  warning: '#D69E2E',     // Yellow (Pending approvals, low stock)
-  warningLight: '#FEEBC8',
-  
-  danger: '#E53E3E',      // Red (Rejected, cancelled, errors)
-  dangerLight: '#FED7D7',
-  
-  info: '#3182CE',        // Blue (Informational, shipped)
-  infoLight: '#BEE3F8',
+  // Status
+  success: '#1FA36A',
+  successBg: '#D8F0DF',
+  warning: '#E8A82E',
+  warningBg: '#FDF3D7',
+  danger: '#E53E3E',
+  dangerBg: '#FDE8E8',
+  info: '#3182CE',
+  infoBg: '#EBF8FF',
+
+  // UI
+  border: '#E8E4DB',    // Warm light gray for borders
+  shadow: '0 4px 12px rgba(18, 38, 63, 0.04)',
+  shadowHover: '0 8px 24px rgba(18, 38, 63, 0.08)',
 };
 
 export const SHADOWS = {
