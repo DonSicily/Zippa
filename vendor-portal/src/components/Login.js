@@ -1,15 +1,15 @@
 import React, { useState } from 'react';
+import { useVendorAuth } from '../hooks/useVendorAuth';
 import { COLORS } from '../utils/colors';
 
-const Login = ({ onLoginSuccess }) => {
+const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
+  const { login, loading, error } = useVendorAuth();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
-    setTimeout(() => { setLoading(false); onLoginSuccess(); }, 1000);
+    await login(email, password); // store flips isAuthenticated on success
   };
 
   const InputField = ({ label, type, value, onChange, placeholder }) => {
@@ -35,14 +35,19 @@ const Login = ({ onLoginSuccess }) => {
   return (
     <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', backgroundColor: COLORS.cream, fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif", padding: '24px', boxSizing: 'border-box' }}>
       <div style={{ backgroundColor: COLORS.white, padding: '40px', borderRadius: '20px', width: '100%', maxWidth: '420px', boxShadow: COLORS.shadowHover, borderTop: `4px solid ${COLORS.gold}`, boxSizing: 'border-box' }}>
-        {/* Brand */}
-        <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+        <div style={{ textAlign: 'center', marginBottom: '28px' }}>
           <div style={{ width: '52px', height: '52px', borderRadius: '14px', backgroundColor: COLORS.navy, border: `2px solid ${COLORS.gold}`, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', marginBottom: '16px' }}>
             <span style={{ color: COLORS.gold, fontSize: '22px', fontWeight: '800' }}>B</span>
           </div>
           <h1 style={{ color: COLORS.navy, margin: '0 0 8px 0', fontSize: '24px', fontWeight: '700', letterSpacing: '-0.5px' }}>Bestiez Vendor</h1>
           <p style={{ color: COLORS.textSecondary, margin: 0, fontSize: '14px' }}>Partner Portal Login</p>
         </div>
+
+        {error && (
+          <div style={{ marginBottom: '20px', padding: '12px 16px', borderRadius: '10px', backgroundColor: COLORS.dangerBg, color: COLORS.danger, fontSize: '13px', fontWeight: '600' }}>
+            {error}
+          </div>
+        )}
 
         <form onSubmit={handleSubmit}>
           <InputField label="Email Address" type="email" value={email} onChange={setEmail} placeholder="factory@example.com" />
