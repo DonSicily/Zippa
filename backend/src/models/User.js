@@ -2,15 +2,12 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 
 const userSchema = new mongoose.Schema({
-  firstName: {
-    type: String,
-    required: [true, 'First name is required'],
-    trim: true,
-  },
-  lastName: {
-    type: String,
-    required: [true, 'Last name is required'],
-    trim: true,
+  firstName: { type: String, trim: true },
+  lastName: { type: String, trim: true },
+  name: { 
+    type: String, 
+    required: [true, 'Name is required'], 
+    trim: true 
   },
   email: {
     type: String,
@@ -18,75 +15,48 @@ const userSchema = new mongoose.Schema({
     unique: true,
     lowercase: true,
     trim: true,
-    match: [/^\S+@\S+\.\S+$/, 'Please provide a valid email'],
   },
-  phone: {
-    type: String,
-    required: [true, 'Phone number is required'],
-    unique: true,
-    trim: true,
-  },
+  phone: { type: String, trim: true },
   password: {
     type: String,
     required: [true, 'Password is required'],
-    minlength: 6,
+    minlength: 8,
     select: false,
-  },
-  campus: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Campus',
   },
   role: {
     type: String,
-    enum: ['student', 'ambassador', 'admin'],
+    enum: ['student', 'vendor', 'admin', 'ambassador'],
     default: 'student',
   },
-  avatar: {
-    type: String,
-    default: '',
+  campusId: { 
+    type: mongoose.Schema.Types.ObjectId, 
+    ref: 'Campus' 
   },
-  deliveryAddress: {
-    street: String,
-    city: String,
-    state: String,
-    zipCode: String,
-    landmark: String,
-  },
-  isVerified: {
-    type: Boolean,
-    default: false,
-  },
-  verificationCode: String,
-  verificationCodeExpires: Date,
-  resetPasswordToken: String,
-  resetPasswordExpires: Date,
-  isActive: {
-    type: Boolean,
-    default: true,
-  },
-  // FIX: added — services/notificationService.js and the mobile app's
-  // usePushNotifications hook both read/write this field, but it was
-  // missing from the schema entirely.
-  pushToken: {
-    type: String,
-    default: null,
-  },
-  // FIX: added — required for the /api/wallet endpoints (wallet balance
-  // shown in mobile-app/src/screens/wallet/*, which had no backing field).
-  walletBalance: {
-    type: Number,
-    default: 0,
-  },
+  
+  // --- OTP & Verification (Used for Student Reg + Admin 2FA) ---
+  otpCode: String,
+  otpExpires: Date,
+  otpAttempts: { type: Number, default: 0 },
+  isVerified: { type: Boolean, default: false },
+  
+  // --- Session Management (Refresh Tokens) ---
+  refreshToken: String,
+  refreshTokenExpires: Date,
+  
+  // --- Push Notifications ---
+  pushToken: String,
+  
+  // --- Admin/Security flags ---
+  isSuspended: { type: Boolean, default: false },
 }, {
   timestamps: true,
 });
 
-// Hash password before saving
+// Pre-save hook to hash password
 userSchema.pre('save', async function(next) {
   if (!this.isModified('password')) return next();
-  
   try {
-    const salt = await bcrypt.genSalt(10);
+    const salt = await bcrypt.genSalt(12);
     this.password = await bcrypt.hash(this.password, salt);
     next();
   } catch (error) {
@@ -94,14 +64,8 @@ userSchema.pre('save', async function(next) {
   }
 });
 
-// Compare password method
 userSchema.methods.comparePassword = async function(candidatePassword) {
   return await bcrypt.compare(candidatePassword, this.password);
 };
-
-// Full name virtual
-userSchema.virtual('fullName').get(function() {
-  return `${this.firstName} ${this.lastName}`;
-});
 
 module.exports = mongoose.model('User', userSchema);
