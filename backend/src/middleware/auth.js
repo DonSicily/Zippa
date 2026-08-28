@@ -15,18 +15,17 @@ const protect = async (req, res, next) => {
       return res.status(401).json({ code: 'NO_TOKEN', message: 'Authentication required.' });
     }
     const token = header.slice(7);
-
     const decoded = jwt.verify(token, process.env.JWT_SECRET, {
       algorithms: ['HS256'],
       issuer: process.env.JWT_ISSUER || 'bestiez-api',
       audience: process.env.JWT_AUDIENCE || 'bestiez-app',
     });
-
+    
     const user = await User.findById(decoded.sub).select('-password -otpCode');
     if (!user || user.isSuspended) {
       return res.status(401).json({ code: 'USER_INVALID', message: 'Account is unavailable.' });
     }
-
+    
     req.user = user;
     req.tokenId = decoded.jti;
     return next();
@@ -46,4 +45,7 @@ const authorize = (...roles) => (req, res, next) => {
   return next();
 };
 
-module.exports = { protect, authorize };
+// Alias for backward compatibility with existing admin routes
+const adminProtect = authorize('admin');
+
+module.exports = { protect, authorize, adminProtect };
