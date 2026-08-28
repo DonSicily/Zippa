@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { Download, Truck, ArrowRight, CheckCircle } from 'lucide-react';
+import { Download, Truck, CheckCircle } from 'lucide-react';
 import { useAdminStore } from '../store/adminStore';
 import { exportShipmentsCSV, schedulePickup } from '../services/adminService';
+import ShipmentPipeline from './ShipmentPipeline';
+import WorldMap from './WorldMap';
 import { COLORS, SHADOWS } from '../utils/colors';
 
 const SEED_PIPELINE = [
@@ -50,7 +52,6 @@ const OrderTracker = () => {
       const res = await exportShipmentsCSV();
       downloadBlob(res.data);
     } catch (err) {
-      // Client-side fallback until /admin/logistics/export-csv ships
       const rows = [['SPEEDAF ID', 'Origin', 'Destination', 'Orders', 'Weight', 'Status', 'ETA'],
         ...shipments.map((s) => [s.id, 'China Hub', 'Lagos Hub', s.orders, s.weight, s.status, s.eta])];
       downloadBlob(new Blob([rows.map((r) => r.join(',')).join('\n')], { type: 'text/csv' }));
@@ -83,22 +84,8 @@ const OrderTracker = () => {
         </div>
       </div>
 
-      {/* Pipeline */}
-      <div style={{ display: 'flex', gap: '12px', marginBottom: '24px', alignItems: 'center' }}>
-        {pipeline.map((step, idx) => (
-          <React.Fragment key={idx}>
-            <div style={{ flex: 1, backgroundColor: COLORS.white, padding: '16px', borderRadius: '8px', boxShadow: SHADOWS.card, borderLeft: `4px solid ${step.color}` }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
-                <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: step.color }} />
-                <span style={{ color: COLORS.textMuted, fontSize: '12px', fontWeight: '600' }}>{step.stage}</span>
-              </div>
-              <div style={{ fontSize: '24px', fontWeight: '700', color: step.color === COLORS.gold ? '#92400E' : step.color }}>{step.count}</div>
-              <div style={{ color: COLORS.textMuted, fontSize: '12px', marginTop: '2px' }}>{step.stage}</div>
-            </div>
-            {idx < pipeline.length - 1 && <ArrowRight size={18} color={COLORS.textMuted} style={{ flexShrink: 0 }} />}
-          </React.Fragment>
-        ))}
-      </div>
+      {/* Pipeline (extracted) */}
+      <ShipmentPipeline pipeline={pipeline} />
 
       {/* Map + Active Shipments list */}
       <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '20px', marginBottom: '20px' }}>
@@ -120,23 +107,7 @@ const OrderTracker = () => {
               )}
             </div>
           </div>
-
-          <div style={{ position: 'relative', height: '280px', backgroundColor: '#F8FAFC', borderRadius: '8px', overflow: 'hidden' }}>
-            <svg viewBox="0 0 600 280" style={{ width: '100%', height: '100%' }}>
-              <path d="M465 115 Q 330 30 165 105" fill="none" stroke="#94A3B8" strokeWidth="1.5" strokeDasharray="5 5" />
-              <path d="M465 115 Q 380 200 300 165" fill="none" stroke="#94A3B8" strokeWidth="1.5" strokeDasharray="5 5" />
-              <path d="M300 165 Q 230 120 165 105" fill="none" stroke="#94A3B8" strokeWidth="1.5" strokeDasharray="5 5" />
-              <circle cx="165" cy="105" r="5" fill="#CBD5E1" />
-              <circle cx="330" cy="80" r="4" fill="#CBD5E1" />
-              <circle cx="465" cy="115" r="7" fill={COLORS.navy} />
-              <circle cx="300" cy="165" r="7" fill={COLORS.gold} />
-            </svg>
-            <div style={{ position: 'absolute', right: '12px', bottom: '12px', backgroundColor: COLORS.white, border: `1px solid ${COLORS.border}`, borderRadius: '8px', padding: '10px 12px', fontSize: '12px', color: COLORS.textMain }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}><div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: COLORS.navy }} /> China Hub</div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}><div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: COLORS.gold }} /> Lagos Hub</div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#CBD5E1' }} /> In Transit</div>
-            </div>
-          </div>
+          <WorldMap />
         </div>
 
         <div style={{ backgroundColor: COLORS.white, padding: '20px', borderRadius: '12px', boxShadow: SHADOWS.card }}>
@@ -175,4 +146,15 @@ const OrderTracker = () => {
                   <td style={cell}>{s.weight}</td>
                   <td style={cell}><span style={{ padding: '4px 10px', borderRadius: '12px', fontSize: '12px', fontWeight: '600', backgroundColor: st.bg, color: st.color }}>{s.status}</span></td>
                   <td style={cell}>{s.eta}</td>
-                  <td style={cell}><a href="#" onClick={(e) => e.preventDefault()} style={{ color: COLORS.coral, fontWeight: '600', fontSize: '14px',
+                  <td style={cell}><a href="#" onClick={(e) => e.preventDefault()} style={{ color: COLORS.coral, fontWeight: '600', fontSize: '14px', textDecoration: 'none' }}>Track</a></td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+};
+
+export default OrderTracker;
