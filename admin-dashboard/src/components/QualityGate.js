@@ -1,21 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Eye, CheckCircle, AlertTriangle, ChevronDown, ChevronLeft, ChevronRight, MapPin } from 'lucide-react';
 import { useQualityStore } from '../store/qualityStore';
+import QualityScoreRing from './QualityScoreRing';
 import { COLORS, SHADOWS } from '../utils/colors';
-
-const ScoreRing = ({ score }) => {
-  const radius = 16;
-  const circ = 2 * Math.PI * radius;
-  const offset = circ - (score / 100) * circ;
-  const color = score >= 90 ? COLORS.success : score >= 70 ? COLORS.warning : COLORS.danger;
-  return (
-    <svg width="40" height="40">
-      <circle cx="20" cy="20" r={radius} fill="none" stroke="#F1F5F9" strokeWidth="3" />
-      <circle cx="20" cy="20" r={radius} fill="none" stroke={color} strokeWidth="3" strokeDasharray={circ} strokeDashoffset={offset} strokeLinecap="round" transform="rotate(-90 20 20)" />
-      <text x="20" y="20" fill={color} fontSize="11" fontWeight="700" textAnchor="middle" dy=".3em">{score}</text>
-    </svg>
-  );
-};
 
 const TABS = [{ id: 'all', label: 'All' }, { id: 'pending', label: 'Pending' }, { id: 'flagged', label: 'Flagged' }];
 
@@ -152,7 +139,7 @@ const QualityGate = () => {
                       : <AlertTriangle size={14} color={p.assets <= 1 ? COLORS.danger : COLORS.warning} />}
                   </span>
                 </td>
-                <td style={cell}><ScoreRing score={p.score} /></td>
+                <td style={cell}><QualityScoreRing score={p.score} /></td>
                 <td style={cell}>
                   <span style={{ padding: '4px 10px', borderRadius: '12px', fontSize: '12px', fontWeight: '600', backgroundColor: p.status === 'Pending' ? COLORS.warningBg : COLORS.dangerBg, color: p.status === 'Pending' ? '#92400E' : COLORS.danger }}>
                     {p.status}
