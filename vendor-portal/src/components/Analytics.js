@@ -1,24 +1,25 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { getDashboardStats } from '../services/vendorService';
+import { Card, KpiCard } from './ui';
 import { COLORS } from '../utils/colors';
 
-const Analytics = () => {
-  const weeklySales = [
-    { day: 'Mon', amount: 4500 }, { day: 'Tue', amount: 6200 }, { day: 'Wed', amount: 5100 },
-    { day: 'Thu', amount: 8400 }, { day: 'Fri', amount: 12000 }, { day: 'Sat', amount: 15500 }, { day: 'Sun', amount: 9800 }
-  ];
-  const maxSales = Math.max(...weeklySales.map(d => d.amount));
-  
-  const topProducts = [
-    { name: 'Wireless Earbuds Pro', sold: 142, revenue: '¥17,040' },
-    { name: 'Smart Fitness Watch', sold: 98, revenue: '¥8,330' },
-    { name: 'Canvas Backpack', sold: 76, revenue: '¥3,420' },
-  ];
+const FALLBACK_TREND = [
+  { day: 'Mon', amount: 4500 }, { day: 'Tue', amount: 6200 }, { day: 'Wed', amount: 5100 },
+  { day: 'Thu', amount: 8400 }, { day: 'Fri', amount: 12000 }, { day: 'Sat', amount: 15500 }, { day: 'Sun', amount: 9800 },
+];
+const FALLBACK_TOP = [
+  { name: 'Wireless Earbuds Pro', sold: 142, revenue: '¥17,040' },
+  { name: 'Smart Fitness Watch', sold: 98, revenue: '¥8,330' },
+  { name: 'Canvas Backpack', sold: 76, revenue: '¥3,420' },
+];
 
-  const stats = [
-    { label: 'Total Revenue (30 Days)', value: '¥124,500', change: '+12.5%', positive: true },
-    { label: 'Orders Fulfilled', value: '1,240', change: '+8.2%', positive: true },
-    { label: 'Conversion Rate', value: '4.8%', change: '-0.4%', positive: false },
-  ];
+const Analytics = () => {
+  const [stats, setStats] = useState({});
+  useEffect(() => { getDashboardStats().then(b => setStats(b?.data || b || {})).catch(() => {}); }, []);
+
+  const trend = stats.salesTrend?.length ? stats.salesTrend.map(d => ({ day: d.label || d.day || d.date?.slice(0, 3), amount: d.amount ?? d.value ?? 0 })) : FALLBACK_TREND;
+  const top = stats.topProducts?.length ? stats.topProducts : FALLBACK_TOP;
+  const maxSales = Math.max(...trend.map(d => d.amount), 1);
 
   return (
     <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
@@ -28,83 +29,39 @@ const Analytics = () => {
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px', marginBottom: '32px' }}>
-        {stats.map((stat, idx) => (
-          <div key={idx} style={{ 
-            backgroundColor: COLORS.white, 
-            padding: '24px', 
-            borderRadius: '16px', 
-            boxShadow: COLORS.shadow,
-            border: `1px solid ${COLORS.border}`
-          }}>
-            <div style={{ color: COLORS.textSecondary, fontSize: '13px', marginBottom: '12px' }}>{stat.label}</div>
-            <div style={{ display: 'flex', alignItems: 'baseline', gap: '10px' }}>
-              <div style={{ color: COLORS.navy, fontSize: '28px', fontWeight: '700', letterSpacing: '-0.5px' }}>{stat.value}</div>
-              <div style={{ 
-                fontSize: '12px', 
-                fontWeight: '600',
-                color: stat.positive ? COLORS.success : COLORS.danger,
-                backgroundColor: stat.positive ? COLORS.successBg : COLORS.dangerBg,
-                padding: '2px 8px',
-                borderRadius: '12px'
-              }}>
-                {stat.change}
-              </div>
-            </div>
-          </div>
-        ))}
+        <KpiCard title="Total Revenue (30 Days)" value={stats.totalRevenue != null ? `¥${Number(stats.totalRevenue).toLocaleString()}` : '¥124,500'} delta={stats.revenueGrowth ?? '+12.5%'} />
+        <KpiCard title="Orders Fulfilled" value={stats.totalOrders ?? '1,240'} delta={stats.ordersGrowth ?? '+8.2%'} />
+        <KpiCard title="Conversion Rate" value={stats.conversionRate != null ? `${stats.conversionRate}%` : '4.8%'} delta={stats.conversionGrowth ?? '-0.4%'} />
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '24px' }}>
-        <div style={{ 
-          backgroundColor: COLORS.white, 
-          padding: '24px', 
-          borderRadius: '16px', 
-          boxShadow: COLORS.shadow,
-          border: `1px solid ${COLORS.border}`
-        }}>
+        <Card>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
             <h3 style={{ color: COLORS.navy, margin: 0, fontSize: '16px', fontWeight: '600' }}>Weekly Sales Trend</h3>
             <div style={{ fontSize: '12px', color: COLORS.textSecondary, padding: '6px 12px', backgroundColor: COLORS.cream, borderRadius: '20px' }}>This Week</div>
           </div>
           <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', height: '220px', paddingBottom: '20px', borderBottom: `1px solid ${COLORS.border}` }}>
-            {weeklySales.map((data, idx) => (
-              <div key={idx} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flex: 1, gap: '10px' }}>
-                <div style={{ 
-                  width: '60%', 
-                  backgroundColor: idx === 5 ? COLORS.coral : COLORS.cream,
-                  borderRadius: '6px 6px 0 0', 
-                  height: `${(data.amount / maxSales) * 100}%`, 
-                  minHeight: '10px', 
-                  transition: 'height 0.3s ease' 
-                }}></div>
-                <div style={{ fontSize: '12px', color: COLORS.textMuted }}>{data.day}</div>
+            {trend.map((d, idx) => (
+              <div key={idx} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flex: 1, gap: '10px', height: '100%', justifyContent: 'flex-end' }}>
+                <div style={{ width: '60%', backgroundColor: d.amount === maxSales ? COLORS.coral : COLORS.cream, borderRadius: '6px 6px 0 0', height: `${(d.amount / maxSales) * 100}%`, minHeight: '10px', transition: 'height 0.3s ease' }}></div>
+                <div style={{ fontSize: '12px', color: COLORS.textMuted }}>{d.day}</div>
               </div>
             ))}
           </div>
-        </div>
+        </Card>
 
-        <div style={{ 
-          backgroundColor: COLORS.white, 
-          padding: '24px', 
-          borderRadius: '16px', 
-          boxShadow: COLORS.shadow,
-          border: `1px solid ${COLORS.border}`
-        }}>
+        <Card>
           <h3 style={{ color: COLORS.navy, margin: '0 0 20px 0', fontSize: '16px', fontWeight: '600' }}>Top Products</h3>
-          {topProducts.map((prod, idx) => (
-            <div key={idx} style={{ 
-              marginBottom: '20px', 
-              paddingBottom: '20px', 
-              borderBottom: idx < topProducts.length - 1 ? `1px solid ${COLORS.border}` : 'none' 
-            }}>
+          {top.map((p, idx) => (
+            <div key={idx} style={{ marginBottom: '20px', paddingBottom: '20px', borderBottom: idx < top.length - 1 ? `1px solid ${COLORS.border}` : 'none' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
-                <span style={{ fontWeight: '600', color: COLORS.textPrimary, fontSize: '14px' }}>{prod.name}</span>
-                <span style={{ fontWeight: '700', color: COLORS.coral, fontSize: '14px' }}>{prod.revenue}</span>
+                <span style={{ fontWeight: '600', color: COLORS.textPrimary, fontSize: '14px' }}>{p.name}</span>
+                <span style={{ fontWeight: '700', color: COLORS.coral, fontSize: '14px' }}>{typeof p.revenue === 'number' ? `¥${p.revenue.toLocaleString()}` : p.revenue}</span>
               </div>
-              <div style={{ fontSize: '12px', color: COLORS.textSecondary }}>{prod.sold} units sold</div>
+              <div style={{ fontSize: '12px', color: COLORS.textSecondary }}>{p.sold ?? p.soldCount ?? 0} units sold</div>
             </div>
           ))}
-        </div>
+        </Card>
       </div>
     </div>
   );
