@@ -43,3 +43,19 @@ export const updateVendorProfile = async (profileData) => {
   const response = await api.put('/vendors/profile', profileData);
   return response.data;
 };
+
+// --- APPENDED to vendor-portal/src/services/vendorService.js ---
+// Order fulfillment (verify route path against docs/API_REFERENCE.md)
+export const updateOrderStatus = async (orderId, status) => {
+  const response = await api.put(`/orders/${orderId}/status`, { status });
+  return response.data;
+};
+// Payout history + withdrawal
+export const getPayoutHistory = async (params = {}) => {
+  const response = await api.get('/wallet/transactions', { params });
+  return response.data;
+};
+export const requestPayout = async (amount) => {
+  const response = await api.post('/wallet/withdraw', { amount });
+  return response.data;
+};
